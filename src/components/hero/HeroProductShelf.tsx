@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
-import { slideUpVariant, floatVariant } from '@/utils/motion'
+import { slideUpVariant, bouncyPulse } from '@/utils/motion'
 import { asset } from '@/utils/asset'
 
 type Product = {
@@ -97,7 +97,7 @@ export function HeroProductShelf() {
                 <motion.div
                   className="h-full w-full"
                   animate={prefersReducedMotion ? undefined : 'animate'}
-                  variants={prefersReducedMotion ? undefined : floatVariant(7, 4.2 + (index % 3) * 0.6, product.delay + 1.2)}
+                  variants={prefersReducedMotion ? undefined : bouncyPulse(7, 0.025, 4.2 + (index % 3) * 0.6, product.delay + 1.2)}
                 >
                   <img
                     src={asset(product.src)}

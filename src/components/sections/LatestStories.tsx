@@ -1,32 +1,25 @@
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
+import { getJournalPosts, type JournalPostSummary } from '@/api/journal'
+import { JournalCard } from '@/components/journal/JournalCard'
 import { Button } from '@/components/ui/Button'
 import { fadeInUp, staggerContainer } from '@/utils/motion'
 
-type Story = {
-  title: string
-  tag: string
-  bg: string
-}
-
-const stories: Story[] = [
-  {
-    title: 'Why Is There A Lemon On Everything?',
-    tag: 'Origin Story',
-    bg: 'color-mix(in srgb, var(--color-flame) 20%, var(--color-cream) 80%)',
-  },
-  {
-    title: 'Inside The Jam Test Kitchen',
-    tag: 'Recipes',
-    bg: 'color-mix(in srgb, var(--color-olive) 20%, var(--color-cream) 80%)',
-  },
-  {
-    title: 'Notes From The Next Drop',
-    tag: 'Behind The Counter',
-    bg: 'color-mix(in srgb, var(--color-sand) 65%, var(--color-cream) 35%)',
-  },
-]
-
 export function LatestStories() {
+  const [stories, setStories] = useState<JournalPostSummary[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const controller = new AbortController()
+    void getJournalPosts({ limit: 3 }, controller.signal)
+      .then(({ posts }) => setStories(posts))
+      .catch(() => undefined)
+      .finally(() => {
+        if (!controller.signal.aborted) setIsLoading(false)
+      })
+    return () => controller.abort()
+  }, [])
+
   return (
     <section id="journal" className="relative bg-cream py-20 lg:py-28">
       <div className="mx-auto max-w-6xl px-6 lg:px-10">
@@ -55,19 +48,19 @@ export function LatestStories() {
           viewport={{ once: true, amount: 0.2 }}
           variants={staggerContainer}
         >
-          {stories.map((story) => (
-            <motion.div
-              key={story.title}
-              variants={fadeInUp}
-              className="relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-[2rem] border-2 border-cocoa/10 p-6"
-              style={{ backgroundColor: story.bg }}
-            >
-              <span className="font-display text-xs font-bold uppercase tracking-wide text-cocoa/50">
-                {story.tag}
-              </span>
-              <p className="mt-3 font-display text-xl font-bold leading-snug text-cocoa">{story.title}</p>
-            </motion.div>
-          ))}
+          {isLoading ? (
+            <p className="col-span-full py-16 text-center font-semibold text-cocoa/50">Loading stories…</p>
+          ) : stories.length ? (
+            stories.map((story) => (
+              <motion.div key={story.id} variants={fadeInUp}>
+                <JournalCard post={story} />
+              </motion.div>
+            ))
+          ) : (
+            <div className="col-span-full rounded-[2rem] border-2 border-cocoa/10 bg-white p-10 text-center">
+              <p className="font-display text-2xl font-bold text-cocoa">Fresh stories are on the way.</p>
+            </div>
+          )}
         </motion.div>
       </div>
     </section>

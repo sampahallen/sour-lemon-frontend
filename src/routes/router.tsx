@@ -2,12 +2,19 @@ import { createBrowserRouter } from 'react-router'
 import { Layout } from '@/components/layout/Layout'
 import { Home } from '@/pages/Home'
 import { Bakery } from '@/pages/Bakery'
+import { BakeryProduct } from '@/pages/BakeryProduct'
+import { CustomCake } from '@/pages/CustomCake'
 import { Shop } from '@/pages/Shop'
 import { Collabs } from '@/pages/Collabs'
 import { Journal } from '@/pages/Journal'
+import { JournalPost } from '@/pages/JournalPost'
 import { About } from '@/pages/About'
 import { Contact } from '@/pages/Contact'
 import { NotFound } from '@/pages/NotFound'
+import { SignIn } from '@/pages/SignIn'
+import { CreateAccount } from '@/pages/CreateAccount'
+import { Account } from '@/pages/Account'
+import { Orders } from '@/pages/Orders'
 
 export const router = createBrowserRouter(
   [
@@ -16,11 +23,18 @@ export const router = createBrowserRouter(
       children: [
         { path: '/', element: <Home /> },
         { path: '/bakery', element: <Bakery /> },
+        { path: '/bakery/:slug', element: <BakeryProduct /> },
+        { path: '/custom-cake', element: <CustomCake /> },
         { path: '/shop', element: <Shop /> },
         { path: '/collabs', element: <Collabs /> },
         { path: '/journal', element: <Journal /> },
+        { path: '/journal/:slug', element: <JournalPost /> },
         { path: '/about', element: <About /> },
         { path: '/contact', element: <Contact /> },
+        { path: '/signin', element: <SignIn /> },
+        { path: '/create-account', element: <CreateAccount /> },
+        { path: '/account', element: <Account /> },
+        { path: '/orders', element: <Orders /> },
         { path: '*', element: <NotFound /> },
       ],
     },

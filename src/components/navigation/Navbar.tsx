@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router'
 import { Wordmark } from '@/assets/logo/Wordmark'
-import { AccountIcon } from '@/assets/icons/AccountIcon'
 import { CartIcon } from '@/assets/icons/CartIcon'
 import { MenuIcon } from '@/assets/icons/MenuIcon'
 import { NAV_LINKS } from '@/utils/navigation'
@@ -10,9 +9,11 @@ import { useHideOnScroll } from '@/hooks/useHideOnScroll'
 import { useNavOverDark } from '@/hooks/useNavOverDark'
 import { useNavBandIntersects } from '@/hooks/useNavBandIntersects'
 import { MobileMenu } from './MobileMenu'
+import { AccountMenu } from './AccountMenu'
 
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false)
   const scrolledHidden = useHideOnScroll()
   const collidesWithContent = useNavBandIntersects('[data-navbar-avoid="true"]')
   const hidden = scrolledHidden || collidesWithContent
@@ -23,7 +24,7 @@ export function Navbar() {
       <header
         className={cn(
           'fixed inset-x-0 top-0 z-50 border-b-2 border-transparent bg-transparent transition-transform duration-300 ease-out',
-          hidden && !menuOpen ? '-translate-y-full' : 'translate-y-0',
+          hidden && !menuOpen && !accountMenuOpen ? '-translate-y-full' : 'translate-y-0',
         )}
       >
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:h-24 lg:px-10">
@@ -50,16 +51,11 @@ export function Navbar() {
           </nav>
 
           <div className="flex items-center gap-1.5 sm:gap-3">
-            <button
-              type="button"
-              aria-label="Account"
-              className={cn(
-                'flex h-9 w-9 items-center justify-center rounded-full transition-colors lg:h-10 lg:w-10',
-                light ? 'text-cream hover:bg-cream/15' : 'text-cocoa hover:bg-butter/60',
-              )}
-            >
-              <AccountIcon className="h-5 w-5" />
-            </button>
+            <AccountMenu
+              light={light}
+              open={accountMenuOpen}
+              onOpenChange={setAccountMenuOpen}
+            />
             <button
               type="button"
               aria-label="Cart"

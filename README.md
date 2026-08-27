@@ -1,5 +1,14 @@
 # React + TypeScript + Vite
 
+## Backend connection
+
+Copy `.env.example` to `.env` and set `VITE_API_URL` to the Sour Lemon backend
+origin. Local development defaults to `http://localhost:4000`.
+
+The account icon opens the sign-in menu. `/signin` submits the customer's phone
+number and password to `POST /api/auth/signin`; the returned JWT session is kept
+in `sessionStorage` for the current browser tab.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

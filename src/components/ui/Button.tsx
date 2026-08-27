@@ -11,6 +11,7 @@ type ButtonProps = {
   variant?: 'primary' | 'outline'
   accent?: 'flame' | 'olive' | 'cocoa' | 'cream'
   size?: 'md' | 'lg'
+  disabled?: boolean
   className?: string
 }
 
@@ -30,10 +31,12 @@ export function Button({
   variant = 'primary',
   accent = 'flame',
   size = 'md',
+  disabled = false,
   className = '',
 }: ButtonProps) {
   const classes = cn(
     'inline-flex items-center justify-center gap-2 rounded-full font-display font-semibold transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0',
+    disabled && 'cursor-not-allowed opacity-45 hover:translate-y-0',
     size === 'lg' ? 'px-8 py-4 text-lg' : 'px-6 py-3 text-base',
     variant === 'primary'
       ? 'bg-flame text-cream shadow-[var(--shadow-chunky)] hover:shadow-[var(--shadow-chunky-sm)]'
@@ -59,7 +62,7 @@ export function Button({
   }
 
   return (
-    <button type={type} onClick={onClick} className={classes}>
+    <button type={type} onClick={onClick} className={classes} disabled={disabled}>
       {children}
     </button>
   )
