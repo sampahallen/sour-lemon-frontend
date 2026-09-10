@@ -8,11 +8,12 @@ import { cn } from '@/utils/cn'
 
 interface AccountMenuProps {
   light: boolean
+  glass: boolean
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-export function AccountMenu({ light, open, onOpenChange }: AccountMenuProps) {
+export function AccountMenu({ light, glass, open, onOpenChange }: AccountMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null)
   const { session, signOut } = useAuth()
   const prefersReducedMotion = usePrefersReducedMotion()
@@ -38,6 +39,11 @@ export function AccountMenu({ light, open, onOpenChange }: AccountMenuProps) {
   const triggerClassName = cn(
     'flex h-9 w-9 items-center justify-center rounded-full transition-colors lg:h-10 lg:w-10',
     light ? 'text-cream hover:bg-cream/15' : 'text-cocoa hover:bg-butter/60',
+    glass && 'backdrop-blur-xl backdrop-saturate-150 border',
+    glass &&
+      (light
+        ? 'border-white/10 bg-white/5 shadow-[0_4px_16px_-4px_rgba(0,0,0,0.35)] backdrop-brightness-75'
+        : 'border-black/5 bg-white/20 shadow-[0_4px_16px_-4px_rgba(0,0,0,0.12)] backdrop-brightness-110'),
   )
 
   // Signed-out visitors have exactly one thing to do here, so skip the popover
@@ -50,6 +56,8 @@ export function AccountMenu({ light, open, onOpenChange }: AccountMenuProps) {
     )
   }
 
+  const initial = session.user.name.trim().charAt(0).toUpperCase()
+
   return (
     <div ref={menuRef} className="relative">
       <button
@@ -61,7 +69,15 @@ export function AccountMenu({ light, open, onOpenChange }: AccountMenuProps) {
         onClick={() => onOpenChange(!open)}
         className={cn(triggerClassName, open && (light ? 'bg-cream/15' : 'bg-butter/60'))}
       >
-        <AccountIcon className="h-5 w-5" />
+        <span
+          aria-hidden="true"
+          className={cn(
+            'flex h-6 w-6 items-center justify-center rounded-full font-display text-xs font-bold lg:h-7 lg:w-7 lg:text-sm',
+            light ? 'bg-cream text-cocoa' : 'bg-flame text-cream',
+          )}
+        >
+          {initial}
+        </span>
       </button>
 
       <AnimatePresence>

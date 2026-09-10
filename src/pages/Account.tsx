@@ -15,6 +15,7 @@ export function Account() {
   const { session, updateProfile } = useAuth()
 
   const [name, setName] = useState(session?.user.name ?? '')
+  const [email, setEmail] = useState(session?.user.email ?? '')
   const [phoneNumber, setPhoneNumber] = useState(session?.user.phoneNumber ?? '')
   const [whatsappNumber, setWhatsappNumber] = useState(session?.user.whatsappNumber ?? '')
   const [currentPassword, setCurrentPassword] = useState('')
@@ -39,9 +40,11 @@ export function Account() {
     setSubmitting(true)
 
     try {
+      const trimmedEmail = email.trim()
       const trimmedWhatsapp = whatsappNumber.trim()
       await updateProfile({
         name: name.trim(),
+        email: trimmedEmail,
         phoneNumber,
         whatsappNumber: trimmedWhatsapp ? normalizePhoneNumber(trimmedWhatsapp) : null,
         ...(newPassword ? { currentPassword, newPassword } : {}),
@@ -81,6 +84,22 @@ export function Account() {
               maxLength={120}
               value={name}
               onChange={(event) => setName(event.target.value)}
+              className={fieldClassName}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="account-email" className="mb-2 block text-sm font-bold">
+              Email
+            </label>
+            <input
+              id="account-email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
               className={fieldClassName}
             />
           </div>

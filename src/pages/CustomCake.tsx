@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { NavLink } from 'react-router'
 import { useAuth } from '@/auth/authContext'
@@ -20,12 +20,20 @@ export function CustomCake() {
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const photoInputRef = useRef<HTMLInputElement>(null)
 
   const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null
     if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl)
     setPhoto(file)
     setPhotoPreviewUrl(file ? URL.createObjectURL(file) : null)
+  }
+
+  const clearPhoto = () => {
+    if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl)
+    setPhoto(null)
+    setPhotoPreviewUrl(null)
+    if (photoInputRef.current) photoInputRef.current.value = ''
   }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -200,21 +208,41 @@ export function CustomCake() {
             </div>
 
             <div>
-              <label htmlFor="cc-photo" className="mb-2 block text-sm font-bold">
+              <label className="mb-2 block text-sm font-bold">
                 Reference photo <span className="font-normal">(optional)</span>
               </label>
-              <div className="flex items-center gap-4">
+              <input
+                ref={photoInputRef}
+                id="cc-photo"
+                name="photo"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={handlePhotoChange}
+              />
+              <div className="flex flex-wrap items-start gap-3">
                 {photoPreviewUrl ? (
-                  <img src={photoPreviewUrl} alt="Reference preview" className="h-16 w-16 rounded-xl object-cover" />
-                ) : null}
-                <input
-                  id="cc-photo"
-                  name="photo"
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={handlePhotoChange}
-                  className="flex-1 text-sm file:mr-4 file:rounded-full file:border-0 file:bg-cocoa file:px-4 file:py-2 file:text-sm file:font-bold file:text-cream file:transition-transform hover:file:-translate-y-0.5"
-                />
+                  <div className="relative h-20 w-20 overflow-hidden rounded-2xl border-2 border-flame bg-white/60">
+                    <img src={photoPreviewUrl} alt="Reference preview" className="h-full w-full object-cover" />
+                    <button
+                      type="button"
+                      aria-label="Remove reference photo"
+                      onClick={clearPhoto}
+                      className="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-cocoa/80 text-sm font-bold text-cream"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    aria-label="Add a reference photo"
+                    onClick={() => photoInputRef.current?.click()}
+                    className="grid h-20 w-20 shrink-0 place-items-center rounded-2xl border-2 border-dashed border-cocoa/30 text-3xl font-light text-cocoa/60 transition hover:border-flame hover:text-flame"
+                  >
+                    +
+                  </button>
+                )}
               </div>
             </div>
 

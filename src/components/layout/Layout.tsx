@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router'
 import { Navbar } from '@/components/navigation/Navbar'
+import { CartDrawer } from '@/components/cart/CartDrawer'
 import { Footer } from './Footer'
 
 export function Layout() {
@@ -10,6 +11,7 @@ export function Layout() {
         <Outlet />
       </main>
       <Footer />
+      <CartDrawer />
     </div>
   )
 }

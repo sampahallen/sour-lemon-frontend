@@ -10,6 +10,7 @@ export function CreateAccount() {
   const navigate = useNavigate()
   const { session, signUp } = useAuth()
   const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
   const [phoneNumber, setPhoneNumber] = useState('')
   const [whatsappNumber, setWhatsappNumber] = useState('')
   const [addressLine1, setAddressLine1] = useState('')
@@ -33,11 +34,13 @@ export function CreateAccount() {
     setSubmitting(true)
 
     try {
+      const trimmedEmail = email.trim()
       const trimmedWhatsapp = whatsappNumber.trim()
       const trimmedAddressLine2 = addressLine2.trim()
       const trimmedLandmark = landmark.trim()
       await signUp({
         name: name.trim(),
+        email: trimmedEmail,
         phoneNumber,
         password,
         ...(trimmedWhatsapp ? { whatsappNumber } : {}),
@@ -104,6 +107,22 @@ export function CreateAccount() {
                 maxLength={120}
                 value={name}
                 onChange={(event) => setName(event.target.value)}
+                className={fieldClassName}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="signup-email" className="mb-2 block text-sm font-bold">
+                Email
+              </label>
+              <input
+                id="signup-email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
                 className={fieldClassName}
               />
             </div>

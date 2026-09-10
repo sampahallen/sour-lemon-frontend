@@ -75,7 +75,7 @@ export function Journal() {
   }
 
   return (
-    <div className="min-h-screen bg-cream pb-24 pt-36">
+    <div className="min-h-screen bg-cream pb-24 pt-4 sm:pt-6 lg:pt-8">
       <header className="mx-auto max-w-6xl px-6 text-center lg:px-10">
         <span className="font-display text-sm font-bold uppercase tracking-[0.18em] text-flame">
           From the kitchen table

@@ -109,9 +109,12 @@ export function SignIn() {
             </div>
 
             <div>
-              <label htmlFor="password" className="mb-2 block text-sm font-bold">
-                Password
-              </label>
+              <div className="mb-2 flex items-center justify-between gap-4">
+                <label htmlFor="password" className="block text-sm font-bold">Password</label>
+                <NavLink to="/forgot-password" className="text-sm font-bold text-flame hover:text-cocoa">
+                  Forgot password?
+                </NavLink>
+              </div>
               <PasswordField
                 id="password"
                 name="password"

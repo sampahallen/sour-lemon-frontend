@@ -54,7 +54,7 @@ export function Bakery() {
   }
 
   return (
-    <div className="min-h-screen bg-cream pb-24 pt-36">
+    <div className="min-h-screen bg-cream pb-24 pt-4 sm:pt-6 lg:pt-8">
       <header className="mx-auto max-w-6xl px-6 text-center lg:px-10">
         <span className="font-display text-sm font-bold uppercase tracking-[0.18em] text-flame">Fresh from the kitchen</span>
         <h1 className="mt-4 font-display text-5xl font-bold text-cocoa sm:text-7xl">The Bakery</h1>
@@ -111,8 +111,8 @@ export function Bakery() {
             <p className="mt-3 text-cocoa/60">Check back soon for the next Sour Lemon menu.</p>
           </div>
         ) : (
-          <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
-            {products.map((product) => <MenuProductCard key={product.id} product={product} />)}
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(15rem,18rem))] justify-center gap-6">
+            {products.map((product) => <MenuProductCard key={product.id} product={product} compact />)}
           </div>
         )}
       </main>

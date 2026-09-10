@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { NavLink } from 'react-router'
-import { NAV_LINKS } from '@/utils/navigation'
+import { useVisibleNavLinks } from '@/hooks/useVisibleNavLinks'
 import { Wordmark } from '@/assets/logo/Wordmark'
 import { MenuIcon } from '@/assets/icons/MenuIcon'
 import { Star, Squiggle } from '@/assets/doodles/doodleIcons'
@@ -13,6 +13,8 @@ type MobileMenuProps = {
 }
 
 export function MobileMenu({ open, onClose }: MobileMenuProps) {
+  const visibleNavLinks = useVisibleNavLinks()
+
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : ''
     return () => {
@@ -54,7 +56,7 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
               </div>
 
               <nav className="mt-12 flex flex-col gap-6" aria-label="Mobile primary">
-                {NAV_LINKS.map((link, index) => (
+                {visibleNavLinks.map((link, index) => (
                   <NavLink
                     key={link.to}
                     to={link.to}
