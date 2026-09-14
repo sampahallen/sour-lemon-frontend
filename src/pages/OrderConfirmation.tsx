@@ -79,22 +79,29 @@ export function OrderConfirmation() {
     (accessCode: string, paymentId: string) => {
       setActionError(null)
       setIsProcessingPayment(true)
+      const reconcilePayment = (fallbackError?: string) => {
+        void verifyPayment(paymentId, access)
+          .then(({ order: verifiedOrder }) => {
+            setOrder(verifiedOrder)
+            if (fallbackError && verifiedOrder.payment?.status !== 'paid') {
+              setActionError(fallbackError)
+            }
+          })
+          .catch((caught: unknown) => {
+            setActionError(caught instanceof Error ? caught.message : fallbackError ?? 'We could not check your payment status.')
+          })
+          .finally(() => setIsProcessingPayment(false))
+      }
       const popup = new PaystackPop()
       popup.resumeTransaction(accessCode, {
         onSuccess: () => {
-          void verifyPayment(paymentId, access)
-            .then(({ order: verifiedOrder }) => setOrder(verifiedOrder))
-            .catch((caught: unknown) => {
-              setActionError(caught instanceof Error ? caught.message : 'We could not verify your payment.')
-            })
-            .finally(() => setIsProcessingPayment(false))
+          reconcilePayment('We could not verify your payment.')
         },
         onCancel: () => {
-          setIsProcessingPayment(false)
+          reconcilePayment()
         },
         onError: (paystackError) => {
-          setActionError(paystackError.message || 'Payment failed. Please try again.')
-          setIsProcessingPayment(false)
+          reconcilePayment(paystackError.message || 'Payment failed. Please try again.')
         },
       })
     },

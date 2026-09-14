@@ -1,55 +1,61 @@
-import { useMemo, useState } from 'react'
-import type { ReactNode } from 'react'
-import { signInRequest, signUpRequest, updateProfileRequest } from './authApi'
-import type { AuthSession } from './authApi'
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react'
+import { signInRequest, signOutRequest, signUpRequest, updateProfileRequest } from './authApi'
 import { AuthContext } from './authContext'
 import type { AuthContextValue } from './authContext'
-
-const SESSION_STORAGE_KEY = 'sour-lemon-auth-session'
-
-const loadStoredSession = (): AuthSession | null => {
-  const stored = sessionStorage.getItem(SESSION_STORAGE_KEY)
-  if (!stored) return null
-
-  try {
-    return JSON.parse(stored) as AuthSession
-  } catch {
-    sessionStorage.removeItem(SESSION_STORAGE_KEY)
-    return null
-  }
-}
+import { acceptSession, clearSession, getAuthState, refreshSession, SessionEndedError, subscribeAuth } from './sessionManager'
+import { SessionLifecycle } from './SessionLifecycle'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<AuthSession | null>(loadStoredSession)
+  const auth = useSyncExternalStore(subscribeAuth, getAuthState)
+  const [isBootstrapping, setIsBootstrapping] = useState(true)
+  const [bootstrapError, setBootstrapError] = useState(false)
+  const [bootAttempt, setBootAttempt] = useState(0)
 
-  const storeSession = (nextSession: AuthSession) => {
-    sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(nextSession))
-    setSession(nextSession)
-  }
+  useEffect(() => {
+    let active = true
+    sessionStorage.removeItem('sour-lemon-auth-session')
+    void refreshSession()
+      .catch((error: unknown) => { if (active && !(error instanceof SessionEndedError)) setBootstrapError(true) })
+      .finally(() => { if (active) setIsBootstrapping(false) })
+    return () => { active = false }
+  }, [bootAttempt])
 
-  const value = useMemo<AuthContextValue>(
-    () => ({
-      session,
-      signIn: async (credentials) => {
-        const nextSession = await signInRequest(credentials)
-        storeSession(nextSession)
-      },
-      signUp: async (details) => {
-        const nextSession = await signUpRequest(details)
-        storeSession(nextSession)
-      },
-      updateProfile: async (details) => {
-        if (!session) throw new Error('You must be signed in to update your details.')
-        const updatedUser = await updateProfileRequest(session.token, details)
-        storeSession({ ...session, user: updatedUser })
-      },
-      signOut: () => {
-        sessionStorage.removeItem(SESSION_STORAGE_KEY)
-        setSession(null)
-      },
-    }),
-    [session],
+  const signIn: AuthContextValue['signIn'] = useCallback(async (credentials) => {
+    const session = await signInRequest(credentials)
+    if (session.user.role !== 'customer') throw new Error('This account does not have customer access.')
+    const previous = getAuthState()
+    acceptSession(session)
+    if (previous.requiresSignIn && previous.session && previous.session.user.id !== session.user.id) window.location.reload()
+  }, [])
+
+  const value = useMemo<AuthContextValue>(() => ({
+    session: auth.session,
+    signIn,
+    signUp: async (details) => acceptSession(await signUpRequest(details)),
+    updateProfile: async (details) => {
+      const session = getAuthState().session
+      if (!session) throw new Error('You must be signed in to update your details.')
+      const user = await updateProfileRequest(session.token, details)
+      acceptSession({ ...getAuthState().session!, user })
+    },
+    signOut: async () => {
+      await signOutRequest()
+      clearSession()
+    },
+  }), [auth.session, signIn])
+
+  if (isBootstrapping) return <div className="grid min-h-screen place-items-center bg-cream font-semibold text-cocoa">Loading Sour Lemon…</div>
+  if (bootstrapError) return (
+    <div className="grid min-h-screen place-items-center bg-cream p-4 text-center">
+      <div><p className="font-semibold">Could not reconnect to Sour Lemon.</p>
+        <button className="mt-3 rounded-lg bg-flame px-4 py-2 font-bold text-white" onClick={() => { setIsBootstrapping(true); setBootstrapError(false); setBootAttempt((attempt) => attempt + 1) }}>Try again</button>
+      </div>
+    </div>
   )
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+      <SessionLifecycle signIn={signIn} appName="customer" />
+    </AuthContext.Provider>
+  )
 }

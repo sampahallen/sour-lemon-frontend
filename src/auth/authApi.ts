@@ -1,4 +1,6 @@
 import { normalizePhoneNumber } from '@/utils/phoneNumber'
+import { apiBaseUrl } from '@/api/baseUrl'
+import { apiRequest } from '@/api/http'
 
 export interface AuthUser {
   id: string
@@ -18,6 +20,9 @@ export interface AuthSession {
   token: string
   tokenType: 'Bearer'
   expiresIn: string | number
+  accessExpiresAt: string
+  sessionExpiresAt: string
+  idleExpiresAt: string
 }
 
 export interface SignInCredentials {
@@ -53,7 +58,15 @@ interface ApiErrorResponse {
   message?: string
 }
 
-const apiBaseUrl = (import.meta.env.VITE_API_URL ?? 'http://localhost:4000').replace(/\/$/, '')
+export { apiBaseUrl } from '@/api/baseUrl'
+
+export async function signOutRequest(): Promise<void> {
+  const response = await fetch(`${apiBaseUrl}/api/auth/customer/signout`, {
+    method: 'POST',
+    credentials: 'include',
+  })
+  if (!response.ok) throw new Error('Could not sign out.')
+}
 
 export async function signInRequest(credentials: SignInCredentials): Promise<AuthSession> {
   const response = await fetch(`${apiBaseUrl}/api/auth/signin`, {
@@ -124,30 +137,19 @@ export async function signUpRequest(details: SignUpDetails): Promise<AuthSession
 }
 
 export async function updateProfileRequest(
-  token: string,
+  _token: string,
   details: UpdateProfileDetails,
 ): Promise<AuthUser> {
-  const response = await fetch(`${apiBaseUrl}/api/users/me`, {
+  void _token
+  const data = await apiRequest<{ user: AuthUser }>('/api/users/me', {
     method: 'PATCH',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
+    body: {
       ...details,
       ...(details.phoneNumber ? { phoneNumber: normalizePhoneNumber(details.phoneNumber) } : {}),
       ...(details.whatsappNumber
         ? { whatsappNumber: normalizePhoneNumber(details.whatsappNumber) }
         : {}),
-    }),
-  })
-
-  if (!response.ok) {
-    const body = (await response.json().catch(() => ({}))) as ApiErrorResponse
-    throw new Error(body.error ?? 'We could not update your details. Please try again.')
-  }
-
-  const data = (await response.json()) as { user: AuthUser }
+    },
+  }, 'We could not update your details. Please try again.')
   return data.user
 }

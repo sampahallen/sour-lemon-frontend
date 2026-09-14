@@ -1,3 +1,5 @@
+import { accessTokenForRequest, hasRecentUserInteraction, isAuthenticationFailure, refreshSession } from '@/auth/sessionManager'
+
 const apiBaseUrl = (import.meta.env.VITE_API_URL ?? 'http://localhost:4000').replace(/\/$/, '')
 
 export interface CustomCakeRequestImage {
@@ -40,16 +42,20 @@ interface ApiErrorBody {
 
 export async function submitCustomCakeRequest(
   input: CustomCakeRequestInput,
-  token?: string,
+  _token?: string,
 ): Promise<{ request: CustomCakeRequestDetail }> {
-  const response = await fetch(`${apiBaseUrl}/api/custom-cake-requests`, {
+  void _token
+  const accessToken = await accessTokenForRequest()
+  const send = (currentToken: string | null) => fetch(`${apiBaseUrl}/api/custom-cake-requests`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(currentToken ? { Authorization: `Bearer ${currentToken}` } : {}),
     },
     body: JSON.stringify(input),
   })
+  let response = await send(accessToken)
+  if (accessToken && hasRecentUserInteraction() && await isAuthenticationFailure(response)) response = await send((await refreshSession(true)).token)
 
   if (!response.ok) {
     const body = (await response.json().catch(() => ({}))) as ApiErrorBody
@@ -62,16 +68,20 @@ export async function submitCustomCakeRequest(
 export async function uploadCustomCakeRequestImage(
   requestId: string,
   file: File,
-  token?: string,
+  _token?: string,
 ): Promise<{ image: CustomCakeRequestImage }> {
+  void _token
   const formData = new FormData()
   formData.append('file', file)
 
-  const response = await fetch(`${apiBaseUrl}/api/custom-cake-requests/${requestId}/images`, {
+  const accessToken = await accessTokenForRequest()
+  const send = (currentToken: string | null) => fetch(`${apiBaseUrl}/api/custom-cake-requests/${requestId}/images`, {
     method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    headers: currentToken ? { Authorization: `Bearer ${currentToken}` } : undefined,
     body: formData,
   })
+  let response = await send(accessToken)
+  if (accessToken && hasRecentUserInteraction() && await isAuthenticationFailure(response)) response = await send((await refreshSession(true)).token)
 
   if (!response.ok) {
     const body = (await response.json().catch(() => ({}))) as ApiErrorBody

@@ -1,13 +1,13 @@
 import { apiRequest } from './http'
-import type { CustomerOrderSummary, OrderReceipt, Pagination } from './orderTypes'
+import type { CustomerOrderScope, CustomerOrderSummary, OrderReceipt, Pagination } from './orderTypes'
 
 interface OrderAccess {
   token?: string | null
   guestAccessToken?: string | null
 }
 
-export function getCustomerOrders(token: string, page = 1, signal?: AbortSignal) {
-  const query = new URLSearchParams({ page: String(page), limit: '12' })
+export function getCustomerOrders(token: string, scope: CustomerOrderScope, page = 1, signal?: AbortSignal) {
+  const query = new URLSearchParams({ scope, page: String(page), limit: '12' })
   return apiRequest<{ orders: CustomerOrderSummary[]; pagination: Pagination }>(
     `/api/orders/mine?${query.toString()}`,
     { token, signal },

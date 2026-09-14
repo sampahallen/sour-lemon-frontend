@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Navigate } from 'react-router'
+import { Navigate, useSearchParams } from 'react-router'
 import { useAuth } from '@/auth/authContext'
 import { getCustomerOrders } from '@/api/orders'
-import type { CustomerOrderSummary, OrderStatus, Pagination } from '@/api/orderTypes'
+import type { CustomerOrderScope, CustomerOrderSummary, OrderStatus, Pagination } from '@/api/orderTypes'
 import { Button } from '@/components/ui/Button'
 import { CakeSlice } from '@/assets/stickers/CakeSlice'
 
@@ -47,7 +47,8 @@ function orderDate(order: CustomerOrderSummary) {
 }
 
 function OrderCard({ order }: { order: CustomerOrderSummary }) {
-  const needsPayment = paymentAttention.has(order.paymentDisplayStatus)
+  const needsPayment = order.status !== 'completed' && order.status !== 'cancelled' &&
+    paymentAttention.has(order.paymentDisplayStatus)
   return (
     <article className="flex h-full flex-col rounded-[1.75rem] border-2 border-cocoa bg-cream p-5 shadow-chunky sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -104,9 +105,15 @@ function OrderCard({ order }: { order: CustomerOrderSummary }) {
 
 export function Orders() {
   const { session } = useAuth()
+  const token = session?.token
+  const [searchParams, setSearchParams] = useSearchParams()
+  const scope: CustomerOrderScope = searchParams.get('scope') === 'history' ? 'history' : 'active'
+  const requestedPage = Number(searchParams.get('page'))
+  const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1
+  const queryKey = `${session?.user.id ?? ''}:${scope}:${page}`
   const [orders, setOrders] = useState<CustomerOrderSummary[]>([])
   const [pagination, setPagination] = useState<Pagination | null>(null)
-  const [page, setPage] = useState(1)
+  const [loadedQuery, setLoadedQuery] = useState<string | null>(null)
   const [reloadKey, setReloadKey] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -120,27 +127,36 @@ export function Orders() {
   const changePage = (nextPage: number) => {
     setIsLoading(true)
     setError(null)
-    setPage(nextPage)
+    setSearchParams({ scope, page: String(nextPage) })
+  }
+
+  const changeScope = (nextScope: CustomerOrderScope) => {
+    if (nextScope === scope) return
+    setIsLoading(true)
+    setError(null)
+    setSearchParams({ scope: nextScope })
   }
 
   useEffect(() => {
-    if (!session) return
+    if (!token) return
     const controller = new AbortController()
-    void getCustomerOrders(session.token, page, controller.signal)
+    void getCustomerOrders(token, scope, page, controller.signal)
       .then((result) => {
         setOrders(result.orders)
         setPagination(result.pagination)
+        setLoadedQuery(queryKey)
       })
       .catch((caught: unknown) => {
         if (!controller.signal.aborted) {
           setError(caught instanceof Error ? caught.message : 'We could not load your orders.')
+          setLoadedQuery(queryKey)
         }
       })
       .finally(() => {
         if (!controller.signal.aborted) setIsLoading(false)
       })
     return () => controller.abort()
-  }, [page, reloadKey, session])
+  }, [page, queryKey, reloadKey, scope, token])
 
   if (!session) return <Navigate to="/signin" replace />
 
@@ -153,17 +169,36 @@ export function Orders() {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.16em] text-olive">Your orders</p>
-            <h1 className="mt-2 text-4xl font-bold sm:text-5xl">Cake progress, at a glance.</h1>
+            <h1 className="mt-2 text-4xl font-bold sm:text-5xl">Your orders, at a glance.</h1>
             <p className="mt-3 max-w-xl text-cocoa/75">Follow each order, finish a pending payment, or open the full details.</p>
           </div>
-          {pagination?.total ? (
+          {loadedQuery === queryKey && !error && pagination?.total ? (
             <p className="rounded-full bg-butter px-4 py-2 text-sm font-bold text-cocoa">
-              {pagination.total} {pagination.total === 1 ? 'order' : 'orders'}
+              {pagination.total} {scope === 'active' ? 'current' : 'past'} {pagination.total === 1 ? 'order' : 'orders'}
             </p>
           ) : null}
         </div>
 
-        {isLoading ? (
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
+          <div className="inline-flex rounded-full border-2 border-cocoa bg-cream p-1" aria-label="Order views">
+            {(['active', 'history'] as const).map((view) => (
+              <button
+                key={view}
+                type="button"
+                onClick={() => changeScope(view)}
+                aria-pressed={scope === view}
+                className={`rounded-full px-5 py-2 text-sm font-bold transition-colors ${scope === view ? 'bg-cocoa text-cream' : 'text-cocoa hover:bg-butter'}`}
+              >
+                {view === 'active' ? 'Current orders' : 'Order history'}
+              </button>
+            ))}
+          </div>
+          <Button variant="outline" accent="cocoa" onClick={retry} disabled={isLoading} className="shadow-none">
+            Refresh orders
+          </Button>
+        </div>
+
+        {isLoading || loadedQuery !== queryKey ? (
           <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3" aria-label="Loading orders">
             {[0, 1, 2].map((item) => <div key={item} className="h-72 animate-pulse rounded-[1.75rem] bg-butter/60" />)}
           </div>
@@ -175,8 +210,14 @@ export function Orders() {
         ) : orders.length === 0 ? (
           <div className="mt-10 flex flex-col items-center rounded-[2rem] border-2 border-cocoa bg-cream p-8 text-center shadow-chunky sm:p-10">
             <CakeSlice className="h-28 w-28" />
-            <h2 className="mt-6 text-2xl font-bold">No orders here yet.</h2>
-            <p className="mt-2 max-w-sm text-cocoa/75">Once you place an order, its latest status will appear here.</p>
+            <h2 className="mt-6 text-2xl font-bold">
+              {scope === 'active' ? 'No current orders.' : 'No past orders yet.'}
+            </h2>
+            <p className="mt-2 max-w-sm text-cocoa/75">
+              {scope === 'active'
+                ? 'Orders you place will appear here until they are completed or cancelled.'
+                : 'Completed and cancelled orders will appear here.'}
+            </p>
             <Button to="/bakery" className="mt-7" accent="flame">Browse the bakery</Button>
           </div>
         ) : (

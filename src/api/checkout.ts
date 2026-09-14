@@ -26,6 +26,7 @@ export interface CheckoutInput {
   deliveryAreaId?: string | null
   deliveryAddress?: DeliveryAddressInput | null
   paymentMethod: PaymentMethod
+  paymentName?: string
   customerNotes?: string | null
 }
 

@@ -1,4 +1,7 @@
-export const apiBaseUrl = (import.meta.env.VITE_API_URL ?? 'http://localhost:4000').replace(/\/$/, '')
+import { accessTokenForRequest, hasRecentUserInteraction, isAuthenticationFailure, refreshSession } from '@/auth/sessionManager'
+import { apiBaseUrl } from './baseUrl'
+
+export { apiBaseUrl } from './baseUrl'
 
 interface ApiErrorBody {
   error?: string
@@ -24,16 +27,22 @@ export async function apiRequest<T>(
 ): Promise<T> {
   const headers: Record<string, string> = {}
   if (options.body !== undefined) headers['Content-Type'] = 'application/json'
-  if (options.token) headers.Authorization = `Bearer ${options.token}`
+  const accessToken = await accessTokenForRequest()
+  if (accessToken) headers.Authorization = `Bearer ${accessToken}`
   if (options.guestOrderAccessToken) headers['X-Order-Access-Token'] = options.guestOrderAccessToken
 
-  const response = await fetch(`${apiBaseUrl}${path}`, {
+  const send = (requestHeaders: Record<string, string>) => fetch(`${apiBaseUrl}${path}`, {
     method: options.method ?? 'GET',
     credentials: 'include',
-    headers,
+    headers: requestHeaders,
     body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
     signal: options.signal,
   })
+  let response = await send(headers)
+  if (accessToken && hasRecentUserInteraction() && await isAuthenticationFailure(response)) {
+    const refreshed = await refreshSession(true)
+    response = await send({ ...headers, Authorization: `Bearer ${refreshed.token}` })
+  }
 
   if (!response.ok) {
     const body = (await response.json().catch(() => ({}))) as ApiErrorBody

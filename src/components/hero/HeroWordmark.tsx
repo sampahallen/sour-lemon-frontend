@@ -2,6 +2,18 @@ import { motion } from 'framer-motion'
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 import { bouncyPulse } from '@/utils/motion'
 
+function LetteredWord({ text, tilts }: { text: string; tilts: number[] }) {
+  return text.split('').map((letter, index) => (
+    <span
+      key={`${letter}-${index}`}
+      className="inline-block origin-bottom"
+      style={{ transform: `rotate(${tilts[index]}deg)` }}
+    >
+      {letter}
+    </span>
+  ))
+}
+
 export function HeroWordmark() {
   const prefersReducedMotion = usePrefersReducedMotion()
 
@@ -13,18 +25,24 @@ export function HeroWordmark() {
       className="pointer-events-none relative z-10 select-none text-center"
     >
       <motion.span
-        variants={prefersReducedMotion ? undefined : bouncyPulse(8, 0.04, 3.2, 0)}
+        aria-hidden="true"
+        variants={prefersReducedMotion ? undefined : bouncyPulse(3, 0.01, 5.5, 0)}
         animate={prefersReducedMotion ? undefined : 'animate'}
-        className="block -rotate-3 font-display text-[26vw] font-extrabold leading-[0.8] text-[color-mix(in_srgb,var(--color-flame)_88%,var(--color-cream)_12%)] sm:text-[20vw] lg:text-[10rem] xl:text-[12.5rem] 2xl:text-[14.5rem]"
+        className="block"
       >
-        SOUR
+        <span className="block -rotate-3 whitespace-nowrap font-display text-[26vw] font-extrabold leading-[0.8] tracking-[-0.055em] text-flame sm:text-[20vw] lg:text-[10rem] xl:text-[12.5rem] 2xl:text-[14.5rem]">
+          <LetteredWord text="SOUR" tilts={[-3, 2, -2, 3]} />
+        </span>
       </motion.span>
       <motion.span
-        variants={prefersReducedMotion ? undefined : bouncyPulse(8, 0.04, 3.2, 0.3)}
+        aria-hidden="true"
+        variants={prefersReducedMotion ? undefined : bouncyPulse(3, 0.01, 5.5, 0.3)}
         animate={prefersReducedMotion ? undefined : 'animate'}
-        className="-mt-3 block rotate-2 font-display text-[19vw] font-extrabold leading-[0.8] text-[color-mix(in_srgb,var(--color-cocoa)_90%,var(--color-cream)_10%)] sm:text-[15vw] lg:-mt-6 lg:text-[7.75rem] xl:text-[9.75rem] 2xl:text-[11rem]"
+        className="-mt-3 block lg:-mt-6"
       >
-        LEMON
+        <span className="block rotate-2 whitespace-nowrap font-display text-[19vw] font-extrabold leading-[0.8] tracking-[-0.055em] text-flame sm:text-[15vw] lg:text-[7.75rem] xl:text-[9.75rem] 2xl:text-[11rem]">
+          <LetteredWord text="LEMON" tilts={[2, -3, 2, -2, 3]} />
+        </span>
       </motion.span>
     </div>
   )

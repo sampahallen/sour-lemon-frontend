@@ -1,5 +1,4 @@
 import { Link } from 'react-router'
-import { Wordmark } from '@/assets/logo/Wordmark'
 import { LuInstagram } from 'react-icons/lu'
 import { FaTiktok, FaPinterest } from 'react-icons/fa'
 import { Star, Sparkle } from '@/assets/doodles/doodleIcons'
@@ -18,7 +17,9 @@ export function Footer() {
       <div className="mx-auto max-w-7xl px-6 pb-12 pt-2 lg:px-10">
         <div className="grid gap-12 border-b border-cream/15 pb-12 lg:grid-cols-[1.4fr_1fr_1fr_1.4fr]">
           <div>
-            <Wordmark light className="text-2xl" />
+            <p className="font-display text-2xl font-extrabold leading-none tracking-tight text-cream">
+              Sour <span className="text-butter">Lemon</span>
+            </p>
             <p className="mt-4 max-w-xs text-sm text-cream/70">
               A world where food, art and play come together — cakes, jams, collabs and a little
               bit of nostalgia, made by hand.

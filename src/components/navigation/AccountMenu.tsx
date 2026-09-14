@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { NavLink } from 'react-router'
 import { AccountIcon } from '@/assets/icons/AccountIcon'
@@ -17,6 +17,7 @@ export function AccountMenu({ light, glass, open, onOpenChange }: AccountMenuPro
   const menuRef = useRef<HTMLDivElement>(null)
   const { session, signOut } = useAuth()
   const prefersReducedMotion = usePrefersReducedMotion()
+  const [signOutError, setSignOutError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!open) return
@@ -123,12 +124,14 @@ export function AccountMenu({ light, glass, open, onOpenChange }: AccountMenuPro
 
             <div className="my-1 h-px bg-cocoa/10" aria-hidden="true" />
 
+            {signOutError ? <p role="alert" className="px-3 text-xs font-semibold text-flame">{signOutError}</p> : null}
+
             <button
               type="button"
               role="menuitem"
               onClick={() => {
-                signOut()
-                onOpenChange(false)
+                setSignOutError(null)
+                void signOut().then(() => onOpenChange(false)).catch(() => setSignOutError('Could not sign out while disconnected. Please try again.'))
               }}
               className="w-full rounded-xl px-3 py-2 text-left text-sm font-bold transition-colors hover:bg-butter/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-flame"
             >

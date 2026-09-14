@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { Star } from '@/assets/doodles/doodleIcons'
+import { LemonPrintBackdrop } from '@/components/ui/LemonPrintBackdrop'
 import { fadeInUp, staggerContainer } from '@/utils/motion'
 
 type Testimonial = {
@@ -29,7 +30,8 @@ const testimonials: Testimonial[] = [
 export function Testimonials() {
   return (
     <section id="collabs" className="relative bg-sand py-20 lg:py-28">
-      <div className="mx-auto max-w-6xl px-6 text-center lg:px-10">
+      <LemonPrintBackdrop className="opacity-35 [mask-image:linear-gradient(to_bottom,transparent,black_22%,black_78%,transparent)]" />
+      <div className="relative mx-auto max-w-6xl px-6 text-center lg:px-10">
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.4 }} variants={fadeInUp}>
           <span className="font-display text-sm font-bold uppercase tracking-wide text-cocoa/60">
             Made Together

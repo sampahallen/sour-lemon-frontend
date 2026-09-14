@@ -72,6 +72,7 @@ export function Checkout() {
   const [city, setCity] = useState('')
   const [landmark, setLandmark] = useState('')
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card')
+  const [paymentName, setPaymentName] = useState(session?.user.name ?? '')
   const [customerNotes, setCustomerNotes] = useState('')
 
   const [quote, setQuote] = useState<CheckoutQuote | null>(null)
@@ -186,6 +187,7 @@ export function Checkout() {
           phoneNumber,
           fulfillmentType,
           paymentMethod,
+          ...(paymentMethod !== 'cash' ? { paymentName: paymentName.trim() } : {}),
           ...(trimmedEmail ? { customerEmail: trimmedEmail } : {}),
           ...(trimmedWhatsapp ? { whatsappNumber } : {}),
           ...(trimmedNotes ? { customerNotes: trimmedNotes } : {}),
@@ -488,6 +490,26 @@ export function Checkout() {
                     </label>
                   ))}
               </div>
+              {paymentMethod !== 'cash' ? (
+                <div className="mt-4">
+                  <label htmlFor="checkout-payment-name" className="mb-2 block text-sm font-bold">
+                    Name used for payment
+                  </label>
+                  <input
+                    id="checkout-payment-name"
+                    type="text"
+                    required
+                    maxLength={120}
+                    autoComplete="name"
+                    value={paymentName}
+                    onChange={(event) => setPaymentName(event.target.value)}
+                    className={fieldBaseClassName}
+                  />
+                  <p className="mt-1.5 text-xs text-cocoa/55">
+                    Enter the name the payment receipt will show.
+                  </p>
+                </div>
+              ) : null}
             </div>
 
             <div>

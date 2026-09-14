@@ -11,6 +11,8 @@ export type OrderStatus =
   | 'completed'
   | 'cancelled'
 
+export type CustomerOrderScope = 'active' | 'history'
+
 export interface DeliveryAddressInput {
   recipientName: string
   phoneNumber: string
