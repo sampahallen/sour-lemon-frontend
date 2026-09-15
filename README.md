@@ -2,7 +2,7 @@
 
 ## Backend connection
 
-Copy `.env.example` to `.env` and set `VITE_API_URL` to the Sour Lemon backend
+Copy `.env.example` to `.env` and set `API_URL` to the Sour Lemon backend
 origin. Local development defaults to `http://localhost:4000`.
 
 The account icon opens the sign-in menu. `/signin` submits the customer's phone
