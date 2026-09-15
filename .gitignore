@@ -31,3 +31,5 @@ CLAUDE.md
 .github/copilot-instructions.md
 .windsurfrules
 AGENTS.md
+
+.env
