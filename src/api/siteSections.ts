@@ -1,4 +1,4 @@
-const apiBaseUrl = (import.meta.env.API_URL ?? 'http://localhost:4000').replace(/\/$/, '')
+const apiBaseUrl = (import.meta.env.API_URL).replace(/\/$/, '')
 
 export interface SiteSection {
   id: string
