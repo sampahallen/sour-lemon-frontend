@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { Link } from 'react-router'
 import { Button } from '@/components/ui/Button'
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 import { slideUpVariant, bouncyPulse } from '@/utils/motion'
@@ -22,24 +23,15 @@ const products: Product[] = [
     label: 'Mini Cake 01',
     src: '/images/hero-v2/mini-cake-cherry.png',
     rotate: -2,
-    height: 'h-32 sm:h-44 lg:h-56',
+    height: 'h-36 sm:h-48 lg:h-60',
     grow: 'grow-[1]',
     delay: 0.1,
-  },
-  {
-    label: 'Mini Cake 02',
-    src: '/images/hero-v2/mini-cake-olive.png',
-    rotate: 1.5,
-    height: 'h-36 sm:h-48 lg:h-64',
-    grow: 'grow-[1]',
-    hideOnMobile: true,
-    delay: 0.22,
   },
   {
     label: 'Signature Custom Cake',
     src: '/images/hero-v2/signature-celebration-cake.png',
     rotate: -1,
-    height: 'h-44 sm:h-60 lg:h-64',
+    height: 'h-48 sm:h-64 lg:h-72',
     grow: 'grow-[2]',
     delay: 0.02,
   },
@@ -47,7 +39,7 @@ const products: Product[] = [
     label: 'Premium Jam Jar',
     src: '/images/hero-v2/artisan-jam-jar.png',
     rotate: 2,
-    height: 'h-32 sm:h-44 lg:h-56',
+    height: 'h-36 sm:h-48 lg:h-60',
     grow: 'grow-[1]',
     delay: 0.3,
   },
@@ -55,7 +47,7 @@ const products: Product[] = [
     label: 'Creative Studio Composition',
     src: '/images/hero-v2/creative-studio.png',
     rotate: -1.5,
-    height: 'h-36 sm:h-48 lg:h-64',
+    height: 'h-40 sm:h-52 lg:h-72',
     grow: 'grow-[1]',
     hideOnMobile: true,
     delay: 0.16,
@@ -64,7 +56,7 @@ const products: Product[] = [
     label: 'Graphic T Shirt',
     src: '/images/hero-v2/ghanaian-memory-tshirt.png',
     rotate: 2,
-    height: 'h-32 sm:h-44 lg:h-56',
+    height: 'h-36 sm:h-48 lg:h-60',
     grow: 'grow-[1]',
     delay: 0.36,
   },
@@ -112,10 +104,16 @@ export function HeroProductShelf() {
         ))}
       </div>
 
-      <div data-navbar-avoid="true">
-        <Button href="#food" size="lg">
-          Shop Now
+      <div data-navbar-avoid="true" className="flex items-center justify-center gap-4 px-4">
+        <Button to="/bakery" size="lg">
+          Shop the Bakery
         </Button>
+        <Link
+          to="/shop"
+          className="rounded-sm font-display text-sm font-bold text-cocoa underline decoration-cocoa/40 underline-offset-4 transition-colors hover:text-flame focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-flame sm:text-base"
+        >
+          Explore the Shop
+        </Link>
       </div>
     </div>
   )

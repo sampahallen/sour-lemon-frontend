@@ -10,6 +10,7 @@ export function Home() {
   return (
     <>
       <Hero />
+      <SectionDivider color="butter" className="bg-cream" />
 
       <AboutIntro />
       <SectionDivider color="cream" className="bg-butter" />
