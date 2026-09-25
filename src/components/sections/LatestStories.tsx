@@ -21,7 +21,7 @@ export function LatestStories() {
   }, [])
 
   return (
-    <section id="journal" className="relative bg-cream py-20 lg:py-28">
+    <section id="journal" className="relative bg-cream py-16 lg:py-24">
       <div className="mx-auto max-w-6xl px-6 lg:px-10">
         <motion.div
           className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between"
@@ -34,7 +34,7 @@ export function LatestStories() {
             <span className="font-display text-sm font-bold uppercase tracking-wide text-flame">
               Behind The Counter
             </span>
-            <h2 className="mt-3 text-3xl font-bold leading-tight text-cocoa sm:text-4xl">Latest Stories</h2>
+            <h2 className="mt-2 text-3xl font-bold leading-tight text-cocoa sm:text-4xl">Latest Stories</h2>
           </div>
           <Button to="/journal" variant="outline" accent="cocoa">
             Read the Journal
@@ -42,7 +42,7 @@ export function LatestStories() {
         </motion.div>
 
         <motion.div
-          className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3"
+          className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-3"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.2 }}

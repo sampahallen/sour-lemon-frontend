@@ -6,6 +6,8 @@ import {
   type MenuCategory,
   type MenuProduct,
 } from '@/api/catalog'
+import { Sparkle, Squiggle } from '@/assets/doodles/doodleIcons'
+import { CakeIllustration } from '@/assets/illustrations/CakeIllustration'
 import { MenuProductCard } from '@/components/catalog/MenuProductCard'
 import { Button } from '@/components/ui/Button'
 import { LemonPrintBackdrop } from '@/components/ui/LemonPrintBackdrop'
@@ -56,36 +58,52 @@ export function Bakery() {
 
   return (
     <div className="min-h-screen bg-cream pb-24">
-      <header className="relative isolate overflow-hidden pt-20 lg:pt-15">
-        <LemonPrintBackdrop className="-right-1/3 -top-1/4 left-auto h-[150%] w-[95%] opacity-25 [mask-image:radial-gradient(ellipse_at_center,black_15%,transparent_70%)]" />
-        <div className="relative mx-auto grid max-w-7xl items-end gap-6 px-6 pb-10 lg:grid-cols-[minmax(0,1.45fr)_minmax(17rem,0.55fr)] lg:gap-10 lg:px-10 lg:pb-12">
-          <div>
-            <span className="inline-flex items-center gap-3 font-display text-xs font-bold uppercase tracking-[0.22em] text-flame sm:text-sm">
-              <span className="h-px w-8 bg-flame" aria-hidden="true" />
-              Fresh from the kitchen
+      <header
+        data-navbar-theme="dark"
+        className="relative isolate -mt-20 overflow-hidden rounded-b-[2.5rem] bg-flame pt-20 text-cream lg:-mt-24 lg:rounded-b-[4rem] lg:pt-24"
+      >
+        <LemonPrintBackdrop className="opacity-10 mix-blend-screen" />
+        <Sparkle className="absolute left-[7%] top-[32%] h-9 w-9 rotate-12 text-butter/70" />
+        <div className="relative mx-auto grid max-w-7xl items-center gap-8 px-6 py-14 sm:py-16 lg:grid-cols-[minmax(0,1.3fr)_minmax(18rem,0.7fr)] lg:px-10 lg:py-20">
+          <div className="max-w-4xl">
+            <span className="inline-flex items-center gap-3 font-display text-xs font-bold uppercase tracking-[0.22em] text-butter sm:text-sm">
+              <span className="h-px w-8 bg-butter" aria-hidden="true" />
+              Today&apos;s counter
             </span>
-            <h1 className="mt-2 font-display text-[clamp(3.75rem,12vw,8.5rem)] font-extrabold leading-[0.8] tracking-[-0.065em] text-cocoa">
-              <span className="block text-[0.48em] leading-none text-flame">The</span>
-              Bakery<span className="text-flame">.</span>
+            <h1 className="mt-4 font-display text-[clamp(4rem,10vw,8.5rem)] font-extrabold leading-[0.78] tracking-[-0.065em]">
+              The Bakery<span className="text-butter">.</span>
             </h1>
+            <p className="mt-7 max-w-2xl text-base leading-relaxed text-cream/85 sm:text-lg lg:text-xl">
+              Whimsical cakes, mini cakes and made-to-order sweetness—baked in small batches and dressed for the occasion.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 font-display text-xs font-bold uppercase tracking-[0.15em] text-butter">
+              <span>Small batch</span>
+              <span className="h-1.5 w-1.5 rounded-full bg-cream/50" aria-hidden="true" />
+              <span>Made in Accra</span>
+              <span className="h-1.5 w-1.5 rounded-full bg-cream/50" aria-hidden="true" />
+              <span>Big personality</span>
+            </div>
           </div>
-          <p className="max-w-sm border-l-2 border-flame/55 pl-5 text-base leading-relaxed text-cocoa/75 sm:text-lg">
-            Whimsical cakes, mini cakes, and made-to-order sweetness from Sour Lemon.
-          </p>
+          <div className="relative mx-auto hidden aspect-square w-full max-w-[20rem] lg:block">
+            <div className="absolute inset-3 rotate-6 rounded-[42%_58%_47%_53%/52%_42%_58%_48%] bg-butter" />
+            <CakeIllustration className="relative h-full w-full -rotate-3 drop-shadow-[8px_10px_0_rgba(74,44,29,0.18)]" />
+          </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-6 lg:px-10">
-        <div className="flex flex-col gap-5 border-y border-cocoa/15 py-6 lg:flex-row lg:items-center lg:justify-between">
+      <main className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-10 lg:pt-12">
+        <div className="rounded-[1.75rem] border border-cocoa/15 bg-cream px-4 py-4 shadow-[0_8px_30px_rgba(74,44,29,0.06)] sm:px-5 lg:flex lg:items-center lg:justify-between lg:gap-6">
           {categories.length ? (
-            <div className="-mx-6 w-full min-w-0 overflow-x-auto px-6 lg:mx-0 lg:flex-1 lg:px-0" role="group" aria-label="Filter Bakery menu by category">
-              <div className="flex w-max min-w-full gap-2">
+            <div className="min-w-0 overflow-x-auto" role="group" aria-label="Filter Bakery menu by category">
+              <div className="flex w-max gap-2">
                 <button
                   type="button"
                   aria-pressed={!selectedCategory}
                   className={cn(
-                    'shrink-0 rounded-full border px-5 py-2.5 font-display text-sm font-bold transition-colors',
-                    !selectedCategory ? 'border-cocoa bg-cocoa text-cream' : 'border-cocoa/20 text-cocoa hover:border-cocoa',
+                    'shrink-0 rounded-full border-2 px-5 py-2.5 font-display text-sm font-bold transition-colors',
+                    !selectedCategory
+                      ? 'border-cocoa bg-cocoa text-cream'
+                      : 'border-transparent bg-butter/45 text-cocoa hover:border-cocoa/30',
                   )}
                   onClick={() => selectCategory('')}
                 >
@@ -97,10 +115,10 @@ export function Bakery() {
                     type="button"
                     aria-pressed={selectedCategory === category.slug}
                     className={cn(
-                      'shrink-0 rounded-full border px-5 py-2.5 font-display text-sm font-bold transition-colors',
+                      'shrink-0 rounded-full border-2 px-5 py-2.5 font-display text-sm font-bold transition-colors',
                       selectedCategory === category.slug
                         ? 'border-cocoa bg-cocoa text-cream'
-                        : 'border-cocoa/20 text-cocoa hover:border-cocoa',
+                        : 'border-transparent bg-butter/45 text-cocoa hover:border-cocoa/30',
                     )}
                     onClick={() => selectCategory(category.slug)}
                   >
@@ -109,39 +127,65 @@ export function Bakery() {
                 ))}
               </div>
             </div>
-          ) : <p className="text-sm font-medium text-cocoa/55">Made in small batches, just for you.</p>}
+          ) : (
+            <p className="text-sm font-medium text-cocoa/55">Made in small batches, just for you.</p>
+          )}
           <Link
             to="/custom-cake"
-            className="w-fit shrink-0 font-display text-sm font-bold text-olive underline decoration-olive/50 underline-offset-4 transition-colors hover:text-cocoa focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-flame"
+            className="mt-4 inline-flex w-fit shrink-0 items-center gap-2 rounded-full px-2 py-2 font-display text-sm font-bold text-olive underline decoration-olive/50 underline-offset-4 transition-colors hover:text-cocoa focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-flame lg:mt-0"
           >
-            Looking for a custom cake? <span aria-hidden="true">↗</span>
+            Design a custom cake <span aria-hidden="true">↗</span>
           </Link>
         </div>
 
-        <div className="mb-9 mt-12">
-          <div>
-            <span className="font-display text-xs font-bold uppercase tracking-[0.2em] text-flame">Browse the menu</span>
-            <h2 className="mt-2 font-display text-3xl font-bold text-cocoa sm:text-4xl">Pick your treat.</h2>
+        <section className="mt-8 rounded-[2.25rem] bg-butter/30 p-4 sm:p-6 lg:mt-10 lg:rounded-[3rem] lg:p-8">
+          <div className="mb-7 flex flex-wrap items-end justify-between gap-4 px-1 sm:mb-9">
+            <div>
+              <span className="font-display text-xs font-bold uppercase tracking-[0.2em] text-flame">Browse the menu</span>
+              <h2 className="mt-2 font-display text-3xl font-bold tracking-[-0.03em] text-cocoa sm:text-5xl">Pick your treat.</h2>
+            </div>
+            {!isLoading && !error ? (
+              <p className="font-display text-sm font-bold text-cocoa/55">
+                {products.length} {products.length === 1 ? 'treat' : 'treats'} on the counter
+              </p>
+            ) : null}
           </div>
-        </div>
 
-        {isLoading ? (
-          <p className="py-20 text-center font-semibold text-cocoa/55">Loading the Bakery menu…</p>
-        ) : error ? (
-          <div className="rounded-[2rem] border-2 border-flame/20 bg-white p-10 text-center">
-            <p className="font-semibold text-flame">{error}</p>
-            <Button className="mt-5" onClick={() => window.location.reload()}>Try again</Button>
+          {isLoading ? (
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {[0, 1, 2].map((item) => (
+                <div key={item} className="aspect-[4/3] animate-pulse rounded-[2rem] bg-cream/70" />
+              ))}
+            </div>
+          ) : error ? (
+            <div className="rounded-[2rem] border-2 border-flame/20 bg-cream p-10 text-center">
+              <p className="font-semibold text-flame">{error}</p>
+              <Button className="mt-5" onClick={() => window.location.reload()}>Try again</Button>
+            </div>
+          ) : products.length === 0 ? (
+            <div className="rounded-[2rem] border-2 border-cocoa/10 bg-cream p-12 text-center">
+              <h2 className="font-display text-3xl font-bold text-cocoa">Nothing is on this counter yet.</h2>
+              <p className="mt-3 text-cocoa/60">Check back soon for the next Sour Lemon menu.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {products.map((product, index) => {
+                const featured = index === 0 && products.length > 1
+                return (
+                  <div key={product.id} className={cn(featured && 'sm:col-span-2 lg:col-span-2')}>
+                    <MenuProductCard product={product} compact featured={featured} />
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          <div className="mt-9 flex items-center justify-center gap-4 text-flame/70">
+            <Squiggle className="h-5 w-20" />
+            <span className="font-display text-xs font-bold uppercase tracking-[0.18em]">Made by hand</span>
+            <Squiggle className="h-5 w-20 -scale-x-100" />
           </div>
-        ) : products.length === 0 ? (
-          <div className="rounded-[2rem] border-2 border-cocoa/10 bg-white p-12 text-center">
-            <h2 className="font-display text-3xl font-bold text-cocoa">Nothing is on this counter yet.</h2>
-            <p className="mt-3 text-cocoa/60">Check back soon for the next Sour Lemon menu.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-x-7 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-            {products.map((product) => <MenuProductCard key={product.id} product={product} compact />)}
-          </div>
-        )}
+        </section>
       </main>
     </div>
   )

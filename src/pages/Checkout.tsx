@@ -345,12 +345,6 @@ export function Checkout() {
                 ))}
               </div>
 
-              {(fulfillmentType === 'pickup' || fulfillmentType === 'customer_rider') && quote?.pickupLocation ? (
-                <p className="mt-3 rounded-2xl bg-butter/50 px-4 py-3 text-sm font-semibold text-cocoa">
-                  Pickup location: {quote.pickupLocation}
-                </p>
-              ) : null}
-
               {needsAddress ? (
                 <div className="mt-4 space-y-4">
                   <div>

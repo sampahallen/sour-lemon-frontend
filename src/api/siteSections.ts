@@ -1,4 +1,4 @@
-const apiBaseUrl = import.meta.env.VITE_API_URL.replace(/\/$/, '')
+import { publicJsonRequest } from './publicContent'
 
 export interface SiteSection {
   id: string
@@ -9,15 +9,8 @@ export interface SiteSection {
   sortOrder: number
 }
 
-interface ApiErrorBody {
-  error?: string
-}
+export const siteSectionsPath = '/api/site-sections'
 
 export async function getSiteSections(signal?: AbortSignal) {
-  const response = await fetch(`${apiBaseUrl}/api/site-sections`, { signal })
-  if (!response.ok) {
-    const body = (await response.json().catch(() => ({}))) as ApiErrorBody
-    throw new Error(body.error ?? 'We could not load site sections.')
-  }
-  return (await response.json()) as { sections: SiteSection[] }
+  return publicJsonRequest<{ sections: SiteSection[] }>(siteSectionsPath, signal, 'We could not load site sections.')
 }

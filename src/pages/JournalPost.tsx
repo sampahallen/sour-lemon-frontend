@@ -1,7 +1,21 @@
 import { Fragment, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
-import { getJournalPost, type JournalBlock, type JournalPost as JournalPostType } from '@/api/journal'
+import {
+  getJournalPost,
+  getJournalPosts,
+  type JournalBlock,
+  type JournalPost as JournalPostType,
+  type JournalPostSummary,
+} from '@/api/journal'
+import { Sparkle, Squiggle } from '@/assets/doodles/doodleIcons'
+import { JournalCard } from '@/components/journal/JournalCard'
 import { Button } from '@/components/ui/Button'
+
+const formatDate = (value: string) => new Date(value).toLocaleDateString(undefined, {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+})
 
 function JournalContent({ post }: { post: JournalPostType }) {
   const images = new Map(post.images.map((image) => [image.id, image]))
@@ -9,36 +23,37 @@ function JournalContent({ post }: { post: JournalPostType }) {
   const renderBlock = (block: JournalBlock) => {
     switch (block.type) {
       case 'paragraph':
-        return <p className="whitespace-pre-line text-lg leading-8 text-cocoa/80">{block.text}</p>
+        return <p className="whitespace-pre-line text-lg leading-8 text-cocoa/80 sm:text-xl sm:leading-9">{block.text}</p>
       case 'heading':
         return block.level === 2 ? (
-          <h2 className="pt-5 font-display text-3xl font-bold text-cocoa sm:text-4xl">{block.text}</h2>
+          <h2 className="pt-6 font-display text-3xl font-extrabold leading-tight tracking-[-0.025em] text-cocoa sm:text-5xl">{block.text}</h2>
         ) : (
-          <h3 className="pt-4 font-display text-2xl font-bold text-cocoa sm:text-3xl">{block.text}</h3>
+          <h3 className="pt-5 font-display text-2xl font-extrabold text-cocoa sm:text-3xl">{block.text}</h3>
         )
       case 'list': {
         const List = block.style === 'ordered' ? 'ol' : 'ul'
         return (
-          <List className={`space-y-2 pl-7 text-lg leading-8 text-cocoa/80 ${block.style === 'ordered' ? 'list-decimal' : 'list-disc'}`}>
+          <List className={`space-y-3 pl-7 text-lg leading-8 text-cocoa/80 sm:text-xl ${block.style === 'ordered' ? 'list-decimal' : 'list-disc marker:text-flame'}`}>
             {block.items.map((item, itemIndex) => <li key={itemIndex}>{item}</li>)}
           </List>
         )
       }
       case 'quote':
         return (
-          <blockquote className="rounded-r-2xl border-l-4 border-flame bg-butter/25 px-7 py-6">
-            <p className="font-display text-2xl font-semibold leading-relaxed text-cocoa">“{block.text}”</p>
-            {block.attribution ? <cite className="mt-3 block text-sm font-semibold not-italic text-cocoa/55">— {block.attribution}</cite> : null}
+          <blockquote className="relative overflow-hidden rounded-[2rem] border-2 border-cocoa bg-butter px-7 py-8 shadow-chunky sm:px-10 sm:py-10">
+            <Sparkle className="absolute right-6 top-5 h-8 w-8 text-flame/45" />
+            <p className="pr-8 font-display text-2xl font-extrabold leading-relaxed text-cocoa sm:text-4xl">“{block.text}”</p>
+            {block.attribution ? <cite className="mt-5 block text-sm font-bold not-italic text-cocoa/55">— {block.attribution}</cite> : null}
           </blockquote>
         )
       case 'image': {
         const image = images.get(block.imageId)
         if (!image) return null
         return (
-          <figure>
-            <img src={image.url} alt={image.altText} className="max-h-[44rem] w-full rounded-[2rem] object-cover" />
+          <figure className="py-3">
+            <img src={image.url} alt={image.altText} className="max-h-[44rem] w-full rounded-[2rem] border-2 border-cocoa object-cover" />
             {block.caption || image.caption ? (
-              <figcaption className="mt-3 text-center text-sm text-cocoa/55">{block.caption || image.caption}</figcaption>
+              <figcaption className="mt-3 text-center text-sm font-medium text-cocoa/55">{block.caption || image.caption}</figcaption>
             ) : null}
           </figure>
         )
@@ -46,43 +61,61 @@ function JournalContent({ post }: { post: JournalPostType }) {
     }
   }
 
-  return (
-    <div className="space-y-7">
-      {post.body.blocks.map((block, index) => <Fragment key={index}>{renderBlock(block)}</Fragment>)}
-    </div>
-  )
+  return <div className="space-y-8">{post.body.blocks.map((block, index) => <Fragment key={index}>{renderBlock(block)}</Fragment>)}</div>
 }
 
 export function JournalPost() {
   const { slug = '' } = useParams()
   const [post, setPost] = useState<JournalPostType | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [relatedPosts, setRelatedPosts] = useState<JournalPostSummary[]>([])
+  const [loadedSlug, setLoadedSlug] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const controller = new AbortController()
     void getJournalPost(slug, controller.signal)
-      .then(({ post }) => setPost(post))
+      .then(({ post }) => {
+        setError(null)
+        setPost(post)
+        setRelatedPosts([])
+        setLoadedSlug(slug)
+        void getJournalPosts({ category: post.category.slug, limit: 4 }, controller.signal)
+          .then(({ posts }) => {
+            setRelatedPosts(posts.filter((candidate) => candidate.id !== post.id).slice(0, 3))
+          })
+          .catch(() => {
+            if (!controller.signal.aborted) setRelatedPosts([])
+          })
+      })
       .catch((caught: unknown) => {
         if (!controller.signal.aborted) {
+          setPost(null)
+          setRelatedPosts([])
           setError(caught instanceof Error ? caught.message : 'Could not load this story.')
+          setLoadedSlug(slug)
         }
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setIsLoading(false)
       })
     return () => controller.abort()
   }, [slug])
 
+  const isLoading = loadedSlug !== slug
+
   if (isLoading) {
-    return <p className="min-h-screen bg-cream px-6 pb-24 pt-40 text-center font-semibold text-cocoa/55">Loading story…</p>
+    return (
+      <div className="min-h-screen animate-pulse bg-cream px-6 pb-24 pt-36">
+        <div className="mx-auto h-6 w-32 rounded-full bg-flame/20" />
+        <div className="mx-auto mt-7 h-20 max-w-3xl rounded-[2rem] bg-cocoa/10" />
+        <div className="mx-auto mt-10 h-[28rem] max-w-6xl rounded-[2.5rem] bg-butter/50" />
+      </div>
+    )
   }
 
   if (error || !post) {
     return (
       <div className="min-h-screen bg-cream px-6 pb-24 pt-40 text-center">
-        <h1 className="font-display text-4xl font-bold text-cocoa">This story could not be found.</h1>
-        <p className="mt-4 text-cocoa/60">{error}</p>
+        <span className="font-display text-xs font-bold uppercase tracking-[0.2em] text-flame">Journal</span>
+        <h1 className="mt-4 font-display text-4xl font-extrabold text-cocoa sm:text-6xl">This story could not be found.</h1>
+        {error ? <p className="mt-4 text-cocoa/60">{error}</p> : null}
         <Button to="/journal" className="mt-7">Back to the Journal</Button>
       </div>
     )
@@ -91,35 +124,46 @@ export function JournalPost() {
   const cover = post.images.find((image) => image.role === 'cover')
 
   return (
-    <article className="min-h-screen bg-cream pb-24 pt-32">
-      <header className="mx-auto max-w-4xl px-6 text-center lg:px-10">
-        <Link to={`/journal?category=${post.category.slug}`} className="font-display text-sm font-bold uppercase tracking-[0.16em] text-flame">
-          {post.category.name}
-        </Link>
-        <h1 className="mt-5 font-display text-4xl font-bold leading-tight text-cocoa sm:text-6xl">{post.title}</h1>
-        {post.excerpt ? <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-cocoa/65">{post.excerpt}</p> : null}
-        <div className="mt-6 flex flex-wrap justify-center gap-x-3 text-sm font-semibold text-cocoa/50">
-          {post.author ? <span>By {post.author.name}</span> : null}
-          {post.author ? <span aria-hidden="true">·</span> : null}
-          <time dateTime={post.publishedAt}>
-            {new Date(post.publishedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}
-          </time>
+    <article className="min-h-screen bg-cream pb-24">
+      <header data-navbar-theme="dark" className="relative -mt-20 overflow-hidden bg-cocoa px-6 pb-16 pt-40 text-cream lg:-mt-24 lg:px-10 lg:pb-20 lg:pt-44">
+        <Sparkle className="absolute right-[8%] top-[30%] h-10 w-10 text-flame/60" />
+        <div className="mx-auto max-w-5xl">
+          <Link to={`/journal?category=${post.category.slug}`} className="font-display text-xs font-bold uppercase tracking-[0.2em] text-butter hover:text-flame">
+            {post.category.name}
+          </Link>
+          <h1 className="mt-6 max-w-5xl font-display text-4xl font-extrabold leading-[0.95] tracking-[-0.045em] sm:text-6xl lg:text-7xl">{post.title}</h1>
+          {post.excerpt ? <p className="mt-7 max-w-2xl text-lg leading-relaxed text-cream/70 sm:text-xl">{post.excerpt}</p> : null}
+          <div className="mt-8 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-semibold text-cream/55">
+            {post.author ? <span>By {post.author.name}</span> : null}
+            {post.author ? <span aria-hidden="true">·</span> : null}
+            <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
+          </div>
         </div>
       </header>
 
       {cover ? (
-        <figure className="mx-auto mt-12 max-w-6xl px-6 lg:px-10">
-          <img src={cover.url} alt={cover.altText} className="max-h-[42rem] w-full rounded-[2.5rem] object-cover" />
-          {cover.caption ? <figcaption className="mt-3 text-center text-sm text-cocoa/55">{cover.caption}</figcaption> : null}
+        <figure className="mx-auto -mt-1 max-w-7xl px-4 pt-10 sm:px-6 lg:px-10">
+          <img src={cover.url} alt={cover.altText} className="max-h-[46rem] w-full rounded-[2rem] border-2 border-cocoa object-cover shadow-chunky sm:rounded-[3rem]" />
+          {cover.caption ? <figcaption className="mt-4 text-center text-sm font-medium text-cocoa/55">{cover.caption}</figcaption> : null}
         </figure>
       ) : null}
 
-      <div className="mx-auto mt-12 max-w-3xl px-6 lg:px-10">
+      <div className="mx-auto mt-14 max-w-3xl px-6 lg:px-10">
         <JournalContent post={post} />
-        <div className="mt-16 border-t-2 border-cocoa/10 pt-8">
+        <div className="mt-16 flex flex-wrap items-center justify-between gap-5 border-t-2 border-cocoa/15 pt-8">
           <Button to="/journal" variant="outline" accent="cocoa">Back to the Journal</Button>
+          <Squiggle className="h-5 w-24 text-flame" />
         </div>
       </div>
+
+      {relatedPosts.length ? (
+        <section className="mx-auto mt-20 max-w-7xl px-6 lg:px-10" aria-labelledby="related-stories-heading">
+          <h2 id="related-stories-heading" className="font-display text-3xl font-extrabold tracking-[-0.03em] text-cocoa sm:text-5xl">Keep reading</h2>
+          <div className="mt-7 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {relatedPosts.map((relatedPost) => <JournalCard key={relatedPost.id} post={relatedPost} />)}
+          </div>
+        </section>
+      ) : null}
     </article>
   )
 }

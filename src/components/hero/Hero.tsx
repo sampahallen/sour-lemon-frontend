@@ -2,7 +2,6 @@ import { motion } from 'framer-motion'
 import { LemonPrintBackdrop } from '@/components/ui/LemonPrintBackdrop'
 import { HeroWordmark } from './HeroWordmark'
 import { HeroProductShelf } from './HeroProductShelf'
-import { SectionDivider } from '@/components/ui/SectionDivider'
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 import { fadeInUp } from '@/utils/motion'
 
@@ -27,8 +26,6 @@ export function Hero() {
       </div>
 
       <HeroProductShelf />
-
-      <SectionDivider color="butter" className="relative" />
     </section>
   )
 }

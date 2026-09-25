@@ -29,18 +29,18 @@ const testimonials: Testimonial[] = [
 
 export function Testimonials() {
   return (
-    <section id="collabs" className="relative bg-sand py-20 lg:py-28">
+    <section id="collabs" className="relative bg-sand py-16 lg:py-24">
       <LemonPrintBackdrop className="opacity-35 [mask-image:linear-gradient(to_bottom,transparent,black_22%,black_78%,transparent)]" />
       <div className="relative mx-auto max-w-6xl px-6 text-center lg:px-10">
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.4 }} variants={fadeInUp}>
           <span className="font-display text-sm font-bold uppercase tracking-wide text-cocoa/60">
             Made Together
           </span>
-          <h2 className="mt-3 text-3xl font-bold leading-tight text-cocoa sm:text-4xl">Loved By The Regulars</h2>
+          <h2 className="mt-2 text-3xl font-bold leading-tight text-cocoa sm:text-4xl">Loved By The Regulars</h2>
         </motion.div>
 
         <motion.div
-          className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3"
+          className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-3"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.2 }}

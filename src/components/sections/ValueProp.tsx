@@ -26,9 +26,19 @@ export function ValueProp() {
             Every cake, jam, and merch is hand-made by us in limited drops — no factories, no
             shortcuts. Once a drop sells out, it&apos;s gone for good, so shop it while it&apos;s here.
           </p>
+          <div className="mt-6 flex flex-wrap justify-center gap-2 lg:justify-start" aria-label="Sour Lemon values">
+            {['Small batch', 'Made in Accra', 'Limited drops'].map((value) => (
+              <span
+                key={value}
+                className="rounded-full border border-cream/25 bg-cream/10 px-4 py-2 font-display text-xs font-bold uppercase tracking-[0.12em] text-butter"
+              >
+                {value}
+              </span>
+            ))}
+          </div>
           <div className="mt-8">
             <Button to="/shop" variant="outline" accent="cream">
-              Shop the Drop
+              Explore the Shop
             </Button>
           </div>
         </motion.div>

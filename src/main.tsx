@@ -13,13 +13,16 @@ import { RouterProvider } from 'react-router/dom'
 import { AuthProvider } from './auth/AuthProvider'
 import { CartProvider } from './cart/CartProvider'
 import { router } from './routes/router'
+import { SiteSectionsProvider } from './siteSections/SiteSectionsProvider'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AuthProvider>
-      <CartProvider>
-        <RouterProvider router={router} />
-      </CartProvider>
+      <SiteSectionsProvider>
+        <CartProvider>
+          <RouterProvider router={router} />
+        </CartProvider>
+      </SiteSectionsProvider>
     </AuthProvider>
   </StrictMode>,
 )

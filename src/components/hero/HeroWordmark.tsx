@@ -1,49 +1,27 @@
 import { motion } from 'framer-motion'
+import { Wordmark } from '@/assets/logo/Wordmark'
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 import { bouncyPulse } from '@/utils/motion'
-
-function LetteredWord({ text, tilts }: { text: string; tilts: number[] }) {
-  return text.split('').map((letter, index) => (
-    <span
-      key={`${letter}-${index}`}
-      className="inline-block origin-bottom"
-      style={{ transform: `rotate(${tilts[index]}deg)` }}
-    >
-      {letter}
-    </span>
-  ))
-}
 
 export function HeroWordmark() {
   const prefersReducedMotion = usePrefersReducedMotion()
 
   return (
     <div
-      role="img"
-      aria-label="Sour Lemon"
-      data-navbar-avoid="true"
-      className="pointer-events-none relative z-10 select-none text-center"
+      className="pointer-events-none relative z-10 flex select-none items-center justify-center"
     >
-      <motion.span
+      <span
         aria-hidden="true"
+        data-navbar-avoid="true"
+        className="absolute inset-x-0 bottom-[4%] top-[4%]"
+      />
+      <motion.div
         variants={prefersReducedMotion ? undefined : bouncyPulse(3, 0.01, 5.5, 0)}
         animate={prefersReducedMotion ? undefined : 'animate'}
-        className="block"
+        className="flex items-center justify-center"
       >
-        <span className="block -rotate-3 whitespace-nowrap font-display text-[26vw] font-extrabold leading-[0.8] tracking-[-0.055em] text-flame sm:text-[20vw] lg:text-[10rem] xl:text-[12.5rem] 2xl:text-[14.5rem]">
-          <LetteredWord text="SOUR" tilts={[-3, 2, -2, 3]} />
-        </span>
-      </motion.span>
-      <motion.span
-        aria-hidden="true"
-        variants={prefersReducedMotion ? undefined : bouncyPulse(3, 0.01, 5.5, 0.3)}
-        animate={prefersReducedMotion ? undefined : 'animate'}
-        className="-mt-3 block lg:-mt-6"
-      >
-        <span className="block rotate-2 whitespace-nowrap font-display text-[19vw] font-extrabold leading-[0.8] tracking-[-0.055em] text-flame sm:text-[15vw] lg:text-[7.75rem] xl:text-[9.75rem] 2xl:text-[11rem]">
-          <LetteredWord text="LEMON" tilts={[2, -3, 2, -2, 3]} />
-        </span>
-      </motion.span>
+        <Wordmark className="text-[17vw] sm:text-[13vw] lg:text-[6.75rem] xl:text-[8.5rem] 2xl:text-[10rem]" />
+      </motion.div>
     </div>
   )
 }
