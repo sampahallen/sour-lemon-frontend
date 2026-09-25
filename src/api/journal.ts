@@ -1,4 +1,4 @@
-const apiBaseUrl = import.meta.env.VITE_API_URL.replace(/\/$/, '')
+import { cachedPublicJsonRequest, PUBLIC_CACHE_TTL } from './publicContent'
 
 export interface JournalCategory {
   id: string
@@ -53,40 +53,29 @@ export interface JournalPagination {
   totalPages: number
 }
 
-interface ApiErrorBody {
-  error?: string
-}
-
-async function journalRequest<T>(path: string, signal?: AbortSignal): Promise<T> {
-  const response = await fetch(`${apiBaseUrl}${path}`, { signal })
-
-  if (!response.ok) {
-    const body = (await response.json().catch(() => ({}))) as ApiErrorBody
-    throw new Error(body.error ?? 'We could not load the Journal. Please try again.')
-  }
-
-  return (await response.json()) as T
+export const journalPaths = {
+  categories: '/api/journal/categories',
+  posts: (params: { page?: number; limit?: number; category?: string } = {}) => {
+    const query = new URLSearchParams()
+    if (params.page) query.set('page', String(params.page))
+    if (params.limit) query.set('limit', String(params.limit))
+    if (params.category) query.set('category', params.category)
+    return `/api/journal/posts${query.size ? `?${query.toString()}` : ''}`
+  },
+  post: (slug: string) => `/api/journal/posts/${encodeURIComponent(slug)}`,
 }
 
 export function getJournalCategories(signal?: AbortSignal) {
-  return journalRequest<{ categories: JournalCategory[] }>('/api/journal/categories', signal)
+  return cachedPublicJsonRequest<{ categories: JournalCategory[] }>(journalPaths.categories, PUBLIC_CACHE_TTL.journal, signal, 'We could not load the Journal. Please try again.')
 }
 
 export function getJournalPosts(
   params: { page?: number; limit?: number; category?: string } = {},
   signal?: AbortSignal,
 ) {
-  const query = new URLSearchParams()
-  if (params.page) query.set('page', String(params.page))
-  if (params.limit) query.set('limit', String(params.limit))
-  if (params.category) query.set('category', params.category)
-
-  return journalRequest<{ posts: JournalPostSummary[]; pagination: JournalPagination }>(
-    `/api/journal/posts${query.size ? `?${query.toString()}` : ''}`,
-    signal,
-  )
+  return cachedPublicJsonRequest<{ posts: JournalPostSummary[]; pagination: JournalPagination }>(journalPaths.posts(params), PUBLIC_CACHE_TTL.journal, signal, 'We could not load the Journal. Please try again.')
 }
 
 export function getJournalPost(slug: string, signal?: AbortSignal) {
-  return journalRequest<{ post: JournalPost }>(`/api/journal/posts/${encodeURIComponent(slug)}`, signal)
+  return cachedPublicJsonRequest<{ post: JournalPost }>(journalPaths.post(slug), PUBLIC_CACHE_TTL.journal, signal, 'We could not load this story. Please try again.')
 }

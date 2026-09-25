@@ -5,9 +5,7 @@ import { Bakery } from '@/pages/Bakery'
 import { BakeryProduct } from '@/pages/BakeryProduct'
 import { CustomCake } from '@/pages/CustomCake'
 import { Shop } from '@/pages/Shop'
-import { Jams } from '@/pages/Jams'
 import { Collabs } from '@/pages/Collabs'
-import { Merch } from '@/pages/Merch'
 import { Games } from '@/pages/Games'
 import { Journal } from '@/pages/Journal'
 import { JournalPost } from '@/pages/JournalPost'
@@ -33,9 +31,7 @@ export const router = createBrowserRouter(
         { path: '/bakery/:slug', element: <BakeryProduct /> },
         { path: '/custom-cake', element: <CustomCake /> },
         { path: '/shop', element: <Shop /> },
-        { path: '/jams', element: <Jams /> },
         { path: '/collabs', element: <Collabs /> },
-        { path: '/merch', element: <Merch /> },
         { path: '/games', element: <Games /> },
         { path: '/journal', element: <Journal /> },
         { path: '/journal/:slug', element: <JournalPost /> },

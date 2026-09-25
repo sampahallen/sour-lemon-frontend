@@ -13,7 +13,6 @@ export interface CheckoutQuote {
     total: string
     currency: string
   }
-  pickupLocation: string | null
   deliveryFeeMode: string
 }
 

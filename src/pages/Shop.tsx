@@ -5,31 +5,45 @@ import { LemonPrintBackdrop } from '@/components/ui/LemonPrintBackdrop'
 import { asset } from '@/utils/asset'
 import { cn } from '@/utils/cn'
 
-const collections = [
+type ShopCollection = {
+  id: string
+  label: string
+  eyebrow: string
+  title: string
+  description: string
+  image: string
+  action: string
+  to?: string
+  className: string
+  imageClassName: string
+}
+
+const collections: ShopCollection[] = [
   {
     id: 'pantry',
+    label: 'Pantry',
     eyebrow: 'Small-batch pantry',
     title: 'Spread a little joy.',
     description: 'Jams, syrups and bright things for toast, cake and late-night spoonfuls.',
     image: '/images/hero-v2/artisan-jam-jar.png',
-    to: '/jams',
-    action: 'Preview the pantry',
+    action: 'Pantry collection coming soon',
     className: 'bg-flame text-cream lg:col-span-7',
     imageClassName: 'max-h-[22rem] lg:max-h-[26rem]',
   },
   {
     id: 'wearables',
+    label: 'Merch',
     eyebrow: 'Wear the feeling',
     title: 'Memory, but make it merch.',
     description: 'T-shirts, totes and small-run pieces inspired by Ghanaian nostalgia.',
     image: '/images/hero-v2/ghanaian-memory-tshirt.png',
-    to: '/merch',
-    action: 'See what is coming',
+    action: 'Merch collection coming soon',
     className: 'bg-butter text-cocoa lg:col-span-5',
     imageClassName: 'max-h-[20rem] lg:max-h-[23rem]',
   },
   {
     id: 'studio',
+    label: 'Art & play',
     eyebrow: 'From the studio',
     title: 'Good ideas, made tangible.',
     description: 'Prints, playful objects and collaborative experiments from our creative table.',
@@ -89,7 +103,7 @@ export function Shop() {
                 href={`#${collection.id}`}
                 className="rounded-full border-2 border-transparent bg-butter/45 px-5 py-2.5 font-display text-sm font-bold text-cocoa transition-colors hover:border-cocoa/30"
               >
-                {collection.id === 'pantry' ? 'Pantry' : collection.id === 'wearables' ? 'Wearables' : 'Art & play'}
+                {collection.label}
               </a>
             ))}
           </div>
@@ -133,12 +147,18 @@ export function Shop() {
                   )}
                 />
 
-                <Link
-                  to={collection.to}
-                  className="absolute bottom-6 left-6 z-20 inline-flex items-center gap-2 rounded-full border-2 border-current bg-cream px-5 py-3 font-display text-sm font-bold text-cocoa transition-transform motion-safe:hover:-translate-y-0.5 sm:bottom-8 sm:left-8"
-                >
-                  {collection.action} <span aria-hidden="true">↗</span>
-                </Link>
+                {collection.to ? (
+                  <Link
+                    to={collection.to}
+                    className="absolute bottom-6 left-6 z-20 inline-flex items-center gap-2 rounded-full border-2 border-current bg-cream px-5 py-3 font-display text-sm font-bold text-cocoa transition-transform motion-safe:hover:-translate-y-0.5 sm:bottom-8 sm:left-8"
+                  >
+                    {collection.action} <span aria-hidden="true">↗</span>
+                  </Link>
+                ) : (
+                  <span className="absolute bottom-6 left-6 z-20 inline-flex items-center rounded-full border-2 border-current bg-cream px-5 py-3 font-display text-sm font-bold text-cocoa sm:bottom-8 sm:left-8">
+                    {collection.action}
+                  </span>
+                )}
               </article>
             ))}
           </div>

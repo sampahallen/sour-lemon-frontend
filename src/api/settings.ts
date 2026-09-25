@@ -1,15 +1,12 @@
-import { apiRequest } from './http'
+import { cachedPublicJsonRequest, PUBLIC_CACHE_TTL } from './publicContent'
 
 export interface PublicSettings {
   businessWhatsappNumber: string | null
-  pickupLocation: string | null
   deliveryFeeMode: string | null
 }
 
+export const publicSettingsPath = '/api/settings/public'
+
 export function getPublicSettings(signal?: AbortSignal) {
-  return apiRequest<PublicSettings>(
-    '/api/settings/public',
-    { signal },
-    'We could not load store settings. Please try again.',
-  )
+  return cachedPublicJsonRequest<PublicSettings>(publicSettingsPath, PUBLIC_CACHE_TTL.standard, signal, 'We could not load store settings. Please try again.')
 }

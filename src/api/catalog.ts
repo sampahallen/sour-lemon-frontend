@@ -1,4 +1,4 @@
-const apiBaseUrl = import.meta.env.VITE_API_URL.replace(/\/$/, '')
+import { cachedPublicJsonRequest, PUBLIC_CACHE_TTL } from './publicContent'
 
 export interface MenuCategory {
   id: string
@@ -30,37 +30,29 @@ export interface MenuProduct {
   images: MenuProductImage[]
 }
 
-interface ApiErrorBody {
-  error?: string
-}
-
-async function catalogRequest<T>(path: string, signal?: AbortSignal): Promise<T> {
-  const response = await fetch(`${apiBaseUrl}${path}`, { signal })
-  if (!response.ok) {
-    const body = (await response.json().catch(() => ({}))) as ApiErrorBody
-    throw new Error(body.error ?? 'We could not load the Bakery menu. Please try again.')
-  }
-  return (await response.json()) as T
+export const catalogPaths = {
+  categories: '/api/catalog/categories',
+  products: (params: { category?: string; limit?: number } = {}) => {
+    const query = new URLSearchParams()
+    if (params.category) query.set('category', params.category)
+    if (params.limit) query.set('limit', String(params.limit))
+    const search = query.toString()
+    return `/api/catalog/products${search ? `?${search}` : ''}`
+  },
+  product: (slug: string) => `/api/catalog/products/${encodeURIComponent(slug)}`,
 }
 
 export function getMenuCategories(signal?: AbortSignal) {
-  return catalogRequest<{ categories: MenuCategory[] }>('/api/catalog/categories', signal)
+  return cachedPublicJsonRequest<{ categories: MenuCategory[] }>(catalogPaths.categories, PUBLIC_CACHE_TTL.standard, signal, 'We could not load the Bakery menu. Please try again.')
 }
 
 export function getMenuProducts(
   params: { category?: string; limit?: number } = {},
   signal?: AbortSignal,
 ) {
-  const query = new URLSearchParams()
-  if (params.category) query.set('category', params.category)
-  if (params.limit) query.set('limit', String(params.limit))
-  const search = query.toString()
-  return catalogRequest<{ products: MenuProduct[] }>(
-    `/api/catalog/products${search ? `?${search}` : ''}`,
-    signal,
-  )
+  return cachedPublicJsonRequest<{ products: MenuProduct[] }>(catalogPaths.products(params), PUBLIC_CACHE_TTL.standard, signal, 'We could not load the Bakery menu. Please try again.')
 }
 
 export function getMenuProduct(slug: string, signal?: AbortSignal) {
-  return catalogRequest<{ product: MenuProduct }>(`/api/catalog/products/${encodeURIComponent(slug)}`, signal)
+  return cachedPublicJsonRequest<{ product: MenuProduct }>(catalogPaths.product(slug), PUBLIC_CACHE_TTL.standard, signal, 'We could not load this product. Please try again.')
 }

@@ -4,12 +4,13 @@ import { FaTiktok, FaPinterest } from 'react-icons/fa'
 import { Star, Sparkle } from '@/assets/doodles/doodleIcons'
 import { SectionDivider } from '@/components/ui/SectionDivider'
 import { Button } from '@/components/ui/Button'
-import { NAV_LINKS } from '@/utils/navigation'
-
-const shopLinks = NAV_LINKS.slice(0, 3)
-const infoLinks = NAV_LINKS.slice(3)
+import { useVisibleNavLinks } from '@/hooks/useVisibleNavLinks'
 
 export function Footer() {
+  const visibleNavLinks = useVisibleNavLinks()
+  const shopLinks = visibleNavLinks.filter((link) => link.to === '/bakery' || link.to === '/shop')
+  const infoLinks = visibleNavLinks.filter((link) => link.to !== '/bakery' && link.to !== '/shop')
+
   return (
     <footer data-navbar-theme="dark" className="relative bg-cocoa text-cream">
       <SectionDivider color="cocoa" className="bg-cream" />
