@@ -171,9 +171,10 @@ export function Bakery() {
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {products.map((product, index) => {
                 const featured = index === 0 && products.length > 1
+                const tall = !selectedCategory && index === 1
                 return (
                   <div key={product.id} className={cn(featured && 'sm:col-span-2 lg:col-span-2')}>
-                    <MenuProductCard product={product} compact featured={featured} />
+                    <MenuProductCard product={product} compact featured={featured} tall={tall} />
                   </div>
                 )
               })}

@@ -8,10 +8,12 @@ export function MenuProductCard({
   product,
   compact = false,
   featured = false,
+  tall = false,
 }: {
   product: MenuProduct
   compact?: boolean
   featured?: boolean
+  tall?: boolean
 }) {
   const cover = product.images[0]
   const coverUrl = cover?.url ?? product.coverImageUrl
@@ -38,7 +40,7 @@ export function MenuProductCard({
           to={`/bakery/${product.slug}`}
           className="relative block overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-flame"
         >
-          <div className={cn('relative overflow-hidden bg-butter/45', featured ? 'aspect-[16/9]' : 'aspect-[4/3]')}>
+          <div className={cn('relative overflow-hidden bg-butter/45', featured ? 'aspect-[16/9]' : tall ? 'aspect-[4/3] lg:aspect-[3/4]' : 'aspect-[4/3]')}>
             {coverUrl ? (
               <img
                 src={coverUrl}

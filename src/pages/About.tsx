@@ -118,9 +118,6 @@ export function About() {
             <p className="mt-6 text-lg leading-8 text-cocoa/70">
               A personal founder story and portrait will live here. For now, this space marks the hands, memories and point of view behind every Sour Lemon idea without filling in details that have not yet been told.
             </p>
-            <p className="mt-5 rounded-[1.5rem] border-2 border-cocoa/15 bg-white p-5 text-sm font-semibold leading-relaxed text-cocoa/60">
-              This is a fictional placeholder image, not the founder. Their real portrait, name and biography are coming soon.
-            </p>
           </div>
         </section>
 
