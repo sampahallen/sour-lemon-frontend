@@ -4,6 +4,7 @@ import {
   getJournalPost,
   getJournalPosts,
   type JournalBlock,
+  type JournalTextRun,
   type JournalPost as JournalPostType,
   type JournalPostSummary,
 } from '@/api/journal'
@@ -17,24 +18,35 @@ const formatDate = (value: string) => new Date(value).toLocaleDateString(undefin
   year: 'numeric',
 })
 
+function JournalInlineText({ text, runs }: { text: string; runs?: JournalTextRun[] }) {
+  if (!runs || runs.map((run) => run.text).join('') !== text) return text
+  return runs.map((run, index) => {
+    let content: React.ReactNode = run.text
+    if (run.bold) content = <strong>{content}</strong>
+    if (run.italic) content = <em>{content}</em>
+    if (run.underline) content = <u>{content}</u>
+    return <Fragment key={index}>{content}</Fragment>
+  })
+}
+
 function JournalContent({ post }: { post: JournalPostType }) {
   const images = new Map(post.images.map((image) => [image.id, image]))
 
   const renderBlock = (block: JournalBlock) => {
     switch (block.type) {
       case 'paragraph':
-        return <p className="whitespace-pre-line text-lg leading-8 text-cocoa/80 sm:text-xl sm:leading-9">{block.text}</p>
+        return <p className="whitespace-pre-line text-lg leading-8 text-cocoa/80 sm:text-xl sm:leading-9"><JournalInlineText text={block.text} runs={block.runs} /></p>
       case 'heading':
         return block.level === 2 ? (
-          <h2 className="pt-6 font-display text-3xl font-extrabold leading-tight tracking-[-0.025em] text-cocoa sm:text-5xl">{block.text}</h2>
+          <h2 className="pt-6 font-display text-3xl font-extrabold leading-tight tracking-[-0.025em] text-cocoa sm:text-5xl"><JournalInlineText text={block.text} runs={block.runs} /></h2>
         ) : (
-          <h3 className="pt-5 font-display text-2xl font-extrabold text-cocoa sm:text-3xl">{block.text}</h3>
+          <h3 className="pt-5 font-display text-2xl font-extrabold text-cocoa sm:text-3xl"><JournalInlineText text={block.text} runs={block.runs} /></h3>
         )
       case 'list': {
         const List = block.style === 'ordered' ? 'ol' : 'ul'
         return (
           <List className={`space-y-3 pl-7 text-lg leading-8 text-cocoa/80 sm:text-xl ${block.style === 'ordered' ? 'list-decimal' : 'list-disc marker:text-flame'}`}>
-            {block.items.map((item, itemIndex) => <li key={itemIndex}>{item}</li>)}
+            {block.items.map((item, itemIndex) => <li key={itemIndex}><JournalInlineText text={item} runs={block.itemRuns?.[itemIndex]} /></li>)}
           </List>
         )
       }
@@ -42,7 +54,7 @@ function JournalContent({ post }: { post: JournalPostType }) {
         return (
           <blockquote className="relative overflow-hidden rounded-[2rem] border-2 border-cocoa bg-butter px-7 py-8 shadow-chunky sm:px-10 sm:py-10">
             <Sparkle className="absolute right-6 top-5 h-8 w-8 text-flame/45" />
-            <p className="pr-8 font-display text-2xl font-extrabold leading-relaxed text-cocoa sm:text-4xl">“{block.text}”</p>
+            <p className="pr-8 font-display text-2xl font-extrabold leading-relaxed text-cocoa sm:text-4xl">“<JournalInlineText text={block.text} runs={block.runs} />”</p>
             {block.attribution ? <cite className="mt-5 block text-sm font-bold not-italic text-cocoa/55">— {block.attribution}</cite> : null}
           </blockquote>
         )
