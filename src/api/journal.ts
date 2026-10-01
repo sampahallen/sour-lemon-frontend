@@ -21,11 +21,18 @@ export interface JournalPostImage {
   sortOrder: number
 }
 
+export interface JournalTextRun {
+  text: string
+  bold?: boolean
+  italic?: boolean
+  underline?: boolean
+}
+
 export type JournalBlock =
-  | { type: 'paragraph'; text: string }
-  | { type: 'heading'; level: 2 | 3; text: string }
-  | { type: 'list'; style: 'ordered' | 'unordered'; items: string[] }
-  | { type: 'quote'; text: string; attribution?: string }
+  | { type: 'paragraph'; text: string; runs?: JournalTextRun[] }
+  | { type: 'heading'; level: 2 | 3; text: string; runs?: JournalTextRun[] }
+  | { type: 'list'; style: 'ordered' | 'unordered'; items: string[]; itemRuns?: JournalTextRun[][] }
+  | { type: 'quote'; text: string; runs?: JournalTextRun[]; attribution?: string }
   | { type: 'image'; imageId: string; caption?: string }
 
 export interface JournalPostSummary {
