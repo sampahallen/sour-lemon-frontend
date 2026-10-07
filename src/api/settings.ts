@@ -1,6 +1,9 @@
 import { cachedPublicJsonRequest, PUBLIC_CACHE_TTL } from './publicContent'
 
 export interface PublicSettings {
+  momoPaymentNumber: string | null
+  momoRecipientName: string | null
+  momoNetwork: string | null
   businessWhatsappNumber: string | null
   deliveryFeeMode: string | null
 }

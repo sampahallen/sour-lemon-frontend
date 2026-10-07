@@ -4,25 +4,62 @@ import PaystackPop from '@paystack/inline-js'
 import { useAuth } from '@/auth/authContext'
 import { getOrderReceipt, resumeOrRetryOrderPayment } from '@/api/orders'
 import { verifyPayment } from '@/api/payments'
+import { submitOrderPaymentProof } from '@/api/manualPayments'
 import type { OrderReceipt } from '@/api/orderTypes'
 import { getGuestOrderAccessToken } from '@/utils/guestOrderAccess'
 import { Button } from '@/components/ui/Button'
+import { ManualMomoPayment } from '@/components/payment/ManualMomoPayment'
 
 function money(amount: string, currency: string) {
   return `${currency} ${Number(amount).toFixed(2)}`
 }
 
-type DisplayState = 'cash' | 'confirmed' | 'paid-awaiting-review' | 'pending' | 'failed'
+type DisplayState = 'cash' | 'confirmed' | 'paid-awaiting-review' | 'pending' | 'failed' | 'cancelled' | 'manual-pending' | 'manual-review' | 'manual-rejected'
 
 function resolveState(order: OrderReceipt): DisplayState {
   const payment = order.payment
 
+  if (order.status === 'cancelled') return 'cancelled'
+
   if (payment?.method === 'cash') return 'cash'
+  if (payment?.provider === 'manual_momo') {
+    if (payment.status === 'paid') return 'confirmed'
+    const proof = order.paymentProofs[0]
+    return proof?.status === 'submitted' ? 'manual-review' : proof?.status === 'rejected' ? 'manual-rejected' : 'manual-pending'
+  }
   if (payment?.status === 'failed') return 'failed'
   if (payment?.status === 'pending' || !payment) return 'pending'
   if (payment.displayStatus === 'needs_review') return 'paid-awaiting-review'
-  if (order.status === 'cancelled') return 'failed'
   return 'confirmed'
+}
+
+function OrderDetails({ order }: { order: OrderReceipt }) {
+  return (
+    <>
+      <ul className="space-y-3 text-sm">
+        {order.items.map((item) => (
+          <li key={item.id} className="flex justify-between gap-4">
+            <span className="min-w-0 text-cocoa/75">{item.productName} <span className="text-cocoa/50">× {item.quantity}</span></span>
+            <span className="shrink-0 font-semibold">{money(item.lineTotal, order.currency)}</span>
+          </li>
+        ))}
+      </ul>
+      <div className="mt-5 space-y-2 border-t border-cocoa/15 pt-4 text-sm">
+        <div className="flex justify-between gap-4"><span className="text-cocoa/65">Subtotal</span><span>{money(order.subtotal, order.currency)}</span></div>
+        <div className="flex justify-between gap-4"><span className="text-cocoa/65">Delivery fee</span><span>{money(order.deliveryFee, order.currency)}</span></div>
+        <div className="flex justify-between gap-4 border-t border-cocoa/15 pt-3 font-display text-lg font-bold"><span>Total</span><span>{money(order.total, order.currency)}</span></div>
+      </div>
+      {order.deliveryAddress ? (
+        <div className="mt-5 border-t border-cocoa/15 pt-4 text-sm text-cocoa/75">
+          <p className="font-semibold text-cocoa">Delivery to {order.deliveryAddress.recipientName}</p>
+          <p>{order.deliveryAddress.addressLine1}{order.deliveryAddress.addressLine2 ? `, ${order.deliveryAddress.addressLine2}` : ''}</p>
+          <p>{order.deliveryAddress.city}</p>
+          {order.deliveryAddress.landmark ? <p>Near {order.deliveryAddress.landmark}</p> : null}
+          <p>{order.deliveryAddress.phoneNumber}</p>
+        </div>
+      ) : null}
+    </>
+  )
 }
 
 export function OrderConfirmation() {
@@ -40,17 +77,9 @@ export function OrderConfirmation() {
 
   const loadOrder = useCallback(
     async (signal?: AbortSignal) => {
-      try {
-        const { order: nextOrder } = await getOrderReceipt(orderId, access, signal)
-        setOrder(nextOrder)
-        setLoadError(null)
-      } catch (caught) {
-        if (!signal?.aborted) {
-          setLoadError(caught instanceof Error ? caught.message : 'We could not find this order.')
-        }
-      } finally {
-        if (!signal?.aborted) setIsLoading(false)
-      }
+      const { order: nextOrder } = await getOrderReceipt(orderId, access, signal)
+      setOrder(nextOrder)
+      setActionError(null)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [orderId, session?.token, guestAccessToken],
@@ -189,106 +218,91 @@ export function OrderConfirmation() {
       title: 'Your payment did not go through.',
       body: 'No charge was made. You can retry the payment below.',
     },
+    cancelled: { eyebrow: 'Order cancelled', title: 'This order has been cancelled.', body: 'Contact us on WhatsApp if you need help with this order or its payment.' },
+    'manual-pending': { eyebrow: 'Mobile Money payment', title: 'Complete your payment', body: '' },
+    'manual-review': { eyebrow: 'Mobile Money payment', title: 'Payment awaiting review', body: '' },
+    'manual-rejected': { eyebrow: 'Mobile Money payment', title: 'Proof needs another look', body: '' },
   }
 
   const copy = state ? stateCopy[state] : stateCopy.pending
+  const isManualPayment = state === 'manual-pending' || state === 'manual-review' || state === 'manual-rejected'
 
   return (
-    <section className="relative isolate overflow-hidden px-6 py-12 sm:py-16 lg:px-10 lg:py-20">
-      <div className="absolute -left-20 top-12 -z-10 h-64 w-64 rounded-full bg-butter/80" aria-hidden="true" />
-      <div className="absolute -right-24 bottom-8 -z-10 h-72 w-72 rounded-full bg-olive/20" aria-hidden="true" />
+    <section className="mx-auto max-w-6xl px-4 pb-16 pt-8 text-cocoa sm:px-6 sm:pt-12 lg:px-10">
+      <header className="mb-8">
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-olive">{copy.eyebrow}</p>
+        <h1 className="mt-2 font-display text-3xl font-bold sm:text-4xl">{copy.title}</h1>
+        <p className="mt-2 text-sm text-cocoa/60">Order #{order.orderNumber}</p>
+        {copy.body ? <p className="mt-4 max-w-xl text-cocoa/75">{copy.body}</p> : null}
+      </header>
 
-      <div className="mx-auto max-w-3xl overflow-hidden rounded-[2rem] border-2 border-cocoa bg-cream p-8 shadow-chunky sm:p-10 lg:p-12">
-        <p className="text-sm font-bold uppercase tracking-[0.16em] text-olive">{copy.eyebrow}</p>
-        <h1 className="mt-2 text-3xl font-bold sm:text-4xl">{copy.title}</h1>
-        <p className="mt-3 text-cocoa/80">{copy.body}</p>
+      <details className="mb-6 rounded-2xl border border-cocoa/15 bg-butter/50 p-4 lg:hidden">
+        <summary className="flex cursor-pointer items-center justify-between gap-3 text-sm font-semibold">
+          <span>Order details · {order.items.length} {order.items.length === 1 ? 'item' : 'items'}</span>
+          <span className="text-olive">View</span>
+        </summary>
+        <div className="mt-5 border-t border-cocoa/15 pt-5"><OrderDetails order={order} /></div>
+      </details>
 
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <span className="rounded-full bg-butter px-4 py-2 text-sm font-bold text-cocoa">
-            Order #{order.orderNumber}
-          </span>
-          <span className="rounded-full bg-butter px-4 py-2 text-sm font-bold text-cocoa">
-            {money(order.total, order.currency)}
-          </span>
-        </div>
-
-        {actionError && (
-          <p role="alert" className="mt-5 rounded-2xl border-2 border-flame bg-flame/10 px-4 py-3 text-sm font-semibold text-cocoa">
-            {actionError}
-          </p>
-        )}
-
-        <div className="mt-6 flex flex-wrap gap-3">
-          {state === 'pending' && order.payment?.accessCode ? (
-            <Button onClick={handleResume} disabled={isProcessingPayment} accent="flame">
-              {isProcessingPayment ? 'Opening payment…' : 'Resume payment'}
-            </Button>
+      <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="min-w-0">
+          {isManualPayment && order.momo ? (
+            <ManualMomoPayment
+              amount={order.total}
+              currency={order.currency}
+              momo={order.momo}
+              status={state === 'manual-review' ? 'review' : state === 'manual-rejected' ? 'rejected' : 'pending'}
+              rejectionReason={order.paymentProofs[0]?.rejectionReason}
+              onSubmit={async (reference, file) => {
+                const { proof } = await submitOrderPaymentProof(orderId, reference, file, guestAccessToken)
+                setOrder((current) => current ? { ...current, paymentProofs: [proof, ...current.paymentProofs] } : current)
+                void loadOrder().catch((caught: unknown) => setActionError(caught instanceof Error ? caught.message : 'Could not refresh payment status.'))
+              }}
+              onRefresh={loadOrder}
+            />
+          ) : isManualPayment ? (
+            <p role="alert" className="rounded-xl border border-flame/20 bg-flame/5 px-4 py-3 text-sm">Payment details are unavailable. Please contact us for help.</p>
           ) : null}
 
-          {state === 'failed' ? (
-            <Button onClick={() => void handleRetry()} disabled={isProcessingPayment} accent="flame">
-              {isProcessingPayment ? 'Opening payment…' : 'Retry payment'}
-            </Button>
-          ) : null}
+          {actionError ? <p role="alert" className="mt-5 rounded-xl border border-flame/20 bg-flame/5 px-4 py-3 text-sm">{actionError}</p> : null}
 
-          {state === 'paid-awaiting-review' ? (
-            <Button onClick={() => void loadOrder()} variant="outline" accent="cocoa">
-              Refresh status
-            </Button>
+          {!isManualPayment ? (
+            <div className="mt-6 flex flex-wrap gap-3">
+              {state === 'pending' && order.payment?.accessCode ? (
+                <Button onClick={handleResume} disabled={isProcessingPayment} accent="flame">
+                  {isProcessingPayment ? 'Opening payment…' : 'Resume payment'}
+                </Button>
+              ) : null}
+              {state === 'failed' ? (
+                <Button onClick={() => void handleRetry()} disabled={isProcessingPayment} accent="flame">
+                  {isProcessingPayment ? 'Opening payment…' : 'Retry payment'}
+                </Button>
+              ) : null}
+              {state === 'paid-awaiting-review' ? (
+                <Button onClick={() => void loadOrder().catch((caught: unknown) => setActionError(caught instanceof Error ? caught.message : 'Could not refresh payment status.'))} variant="outline" accent="cocoa">
+                  Refresh status
+                </Button>
+              ) : null}
+            </div>
           ) : null}
 
           {order.whatsappLink ? (
-            <Button href={order.whatsappLink} variant="outline" accent="olive">
-              Chat with us on WhatsApp
-            </Button>
-          ) : null}
-        </div>
-
-        <div className="mt-10 border-t-2 border-cocoa/10 pt-8">
-          <h2 className="font-display text-xl font-bold text-cocoa">Order details</h2>
-          <ul className="mt-4 space-y-3">
-            {order.items.map((item) => (
-              <li key={item.id} className="flex items-center justify-between text-sm">
-                <span className="font-semibold text-cocoa">
-                  {item.productName} <span className="text-cocoa/50">× {item.quantity}</span>
-                </span>
-                <span className="font-bold text-cocoa">{money(item.lineTotal, order.currency)}</span>
-              </li>
-            ))}
-          </ul>
-
-          <div className="mt-5 space-y-2 border-t-2 border-dashed border-cocoa/15 pt-4 text-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-cocoa/70">Subtotal</span>
-              <span className="font-semibold text-cocoa">{money(order.subtotal, order.currency)}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-cocoa/70">Delivery fee</span>
-              <span className="font-semibold text-cocoa">{money(order.deliveryFee, order.currency)}</span>
-            </div>
-            <div className="flex items-center justify-between font-display text-lg font-bold text-cocoa">
-              <span>Total</span>
-              <span>{money(order.total, order.currency)}</span>
-            </div>
-          </div>
-
-          {order.deliveryAddress ? (
-            <div className="mt-6 rounded-2xl bg-butter/50 p-4 text-sm text-cocoa">
-              <p className="font-bold">{order.deliveryAddress.recipientName}</p>
-              <p>{order.deliveryAddress.phoneNumber}</p>
-              <p>
-                {order.deliveryAddress.addressLine1}
-                {order.deliveryAddress.addressLine2 ? `, ${order.deliveryAddress.addressLine2}` : ''}
-              </p>
-              <p>{order.deliveryAddress.city}</p>
-              {order.deliveryAddress.landmark ? <p>Near {order.deliveryAddress.landmark}</p> : null}
+            <div className="mt-8 border-t border-cocoa/15 pt-6">
+              <Button href={order.whatsappLink} variant="outline" accent="olive" className="w-full sm:w-auto">
+                Chat with us on WhatsApp
+              </Button>
             </div>
           ) : null}
+
+          <Link to="/" className="mt-8 inline-flex text-sm font-semibold text-cocoa/70 hover:text-olive">
+            ← Back to home
+          </Link>
         </div>
 
-        <Link to="/" className="mt-8 inline-flex text-sm font-bold text-cocoa hover:text-flame">
-          ← Back to home
-        </Link>
+        <aside className="hidden rounded-2xl border border-cocoa/15 bg-butter/50 p-6 lg:sticky lg:top-28 lg:block">
+          <h2 className="mb-5 font-display text-xl font-bold">Order details</h2>
+          <OrderDetails order={order} />
+        </aside>
       </div>
     </section>
   )

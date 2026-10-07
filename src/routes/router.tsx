@@ -4,6 +4,7 @@ import { Home } from '@/pages/Home'
 import { Bakery } from '@/pages/Bakery'
 import { BakeryProduct } from '@/pages/BakeryProduct'
 import { CustomCake } from '@/pages/CustomCake'
+import { CustomCakePayment } from '@/pages/CustomCakePayment'
 import { Shop } from '@/pages/Shop'
 import { Collabs } from '@/pages/Collabs'
 import { Games } from '@/pages/Games'
@@ -30,6 +31,7 @@ export const router = createBrowserRouter(
         { path: '/bakery', element: <Bakery /> },
         { path: '/bakery/:slug', element: <BakeryProduct /> },
         { path: '/custom-cake', element: <CustomCake /> },
+        { path: '/custom-cake/payment/:requestId/:token', element: <CustomCakePayment /> },
         { path: '/shop', element: <Shop /> },
         { path: '/collabs', element: <Collabs /> },
         { path: '/games', element: <Games /> },
