@@ -4,6 +4,7 @@ import { apiRequest } from './http'
 export interface DefaultAddress {
   id: string
   deliveryAreaId: string | null
+  deliveryAreaName: string | null
   recipientName: string
   phoneNumber: string
   addressLine1: string

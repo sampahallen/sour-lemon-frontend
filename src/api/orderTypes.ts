@@ -16,19 +16,23 @@ export type CustomerOrderScope = 'active' | 'history'
 export interface DeliveryAddressInput {
   recipientName: string
   phoneNumber: string
+  area: string
   addressLine1: string
   addressLine2?: string
   city: string
   landmark?: string
+  digitalAddress?: string
 }
 
-export interface DeliveryAddressSnapshot extends DeliveryAddressInput {
+export interface DeliveryAddressSnapshot extends Omit<DeliveryAddressInput, 'area'> {
+  area?: string
+  riderFeeSeparate?: boolean
   deliveryAreaName?: string
 }
 
 export interface OrderPaymentSummary {
   id: string
-  provider: 'paystack' | 'cash'
+  provider: 'paystack' | 'cash' | 'manual_momo'
   method: PaymentMethod
   status: PaymentStatus
   displayStatus: 'waiting_for_payment' | 'needs_review' | 'confirmed' | 'cash_due' | 'cash_collected' | 'failed' | 'refunded'
@@ -48,6 +52,8 @@ export interface OrderItemSummary {
 }
 
 export interface OrderReceipt {
+  momo: { number: string; recipientName: string; network: string } | null
+  paymentProofs: PaymentProofSummary[]
   id: string
   orderNumber: string
   status: OrderStatus
@@ -68,6 +74,16 @@ export interface OrderReceipt {
   items: OrderItemSummary[]
   payment: OrderPaymentSummary | null
   whatsappLink: string | null
+}
+
+export interface PaymentProofSummary {
+  id: string
+  reference: string | null
+  hasImage: boolean
+  status: 'submitted' | 'rejected' | 'confirmed'
+  rejectionReason: string | null
+  reviewedAt: string | null
+  createdAt: string
 }
 
 export interface CustomerOrderSummary {

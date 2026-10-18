@@ -3,7 +3,6 @@ import type { DeliveryAddressInput, FulfillmentType, OrderReceipt, PaymentMethod
 
 export interface CheckoutQuoteInput {
   fulfillmentType: FulfillmentType
-  deliveryAreaId?: string | null
 }
 
 export interface CheckoutQuote {
@@ -22,7 +21,6 @@ export interface CheckoutInput {
   phoneNumber: string
   whatsappNumber?: string | null
   fulfillmentType: FulfillmentType
-  deliveryAreaId?: string | null
   deliveryAddress?: DeliveryAddressInput | null
   paymentMethod: PaymentMethod
   paymentName?: string

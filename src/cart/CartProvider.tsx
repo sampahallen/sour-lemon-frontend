@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { addCartItem, getCart, removeCartItem, updateCartItem, type Cart } from '@/api/cart'
 import { useAuth } from '@/auth/authContext'
@@ -11,40 +11,60 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const { session } = useAuth()
   const token = session?.token ?? null
   const [cart, setCart] = useState<Cart>(emptyCart)
-  const [isLoading, setIsLoading] = useState(true)
+  const [loadedToken, setLoadedToken] = useState<string | null | undefined>(undefined)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isOpen, setIsOpen] = useState(false)
+  const cartRevision = useRef(0)
+  const pendingLoad = useRef<Promise<unknown> | null>(null)
+  const isLoading = isRefreshing || loadedToken !== token
+
+  const waitForLoad = useCallback(async () => {
+    await pendingLoad.current?.catch(() => {})
+  }, [])
 
   const refresh = useCallback(async () => {
-    setIsLoading(true)
+    setIsRefreshing(true)
     setError(null)
+    const revision = cartRevision.current
+    const request = getCart(token)
+    pendingLoad.current = request
     try {
-      const { cart: nextCart } = await getCart(token)
-      setCart(nextCart)
+      const { cart: nextCart } = await request
+      if (revision === cartRevision.current) setCart(nextCart)
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'We could not load your cart.')
+      if (revision === cartRevision.current) setError(caught instanceof Error ? caught.message : 'We could not load your cart.')
     } finally {
-      setIsLoading(false)
+      if (pendingLoad.current === request) pendingLoad.current = null
+      setIsRefreshing(false)
     }
   }, [token])
 
   useEffect(() => {
     let active = true
-    void getCart(token)
+    const controller = new AbortController()
+    const revision = cartRevision.current
+    const request = getCart(token, controller.signal)
+    pendingLoad.current = request
+    void request
       .then(({ cart: nextCart }) => {
-        if (active) {
+        if (active && revision === cartRevision.current) {
           setCart(nextCart)
           setError(null)
         }
       })
       .catch((caught: unknown) => {
-        if (active) setError(caught instanceof Error ? caught.message : 'We could not load your cart.')
+        if (active && revision === cartRevision.current) {
+          setError(caught instanceof Error ? caught.message : 'We could not load your cart.')
+        }
       })
       .finally(() => {
-        if (active) setIsLoading(false)
+        if (pendingLoad.current === request) pendingLoad.current = null
+        if (active) setLoadedToken(token)
       })
     return () => {
       active = false
+      controller.abort()
     }
   }, [token])
 
@@ -64,6 +84,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       closeCart: () => setIsOpen(false),
       toggleCart: () => setIsOpen((prev) => !prev),
       addItem: async (productId, quantity = 1) => {
+        await waitForLoad()
+        cartRevision.current += 1
         setError(null)
         try {
           const { cart: nextCart } = await addCartItem(productId, quantity, token)
@@ -76,6 +98,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }
       },
       updateItem: async (productId, quantity) => {
+        await waitForLoad()
+        cartRevision.current += 1
         setError(null)
         try {
           const { cart: nextCart } = await updateCartItem(productId, quantity, token)
@@ -87,6 +111,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }
       },
       removeItem: async (productId) => {
+        await waitForLoad()
+        cartRevision.current += 1
         setError(null)
         try {
           const { cart: nextCart } = await removeCartItem(productId, token)
@@ -99,7 +125,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       },
       refresh,
     }),
-    [cart, itemCount, isLoading, error, isOpen, token, refresh],
+    [cart, itemCount, isLoading, error, isOpen, token, refresh, waitForLoad],
   )
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>
