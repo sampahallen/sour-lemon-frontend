@@ -46,16 +46,19 @@ function OrderDetails({ order }: { order: OrderReceipt }) {
       </ul>
       <div className="mt-5 space-y-2 border-t border-cocoa/15 pt-4 text-sm">
         <div className="flex justify-between gap-4"><span className="text-cocoa/65">Subtotal</span><span>{money(order.subtotal, order.currency)}</span></div>
-        <div className="flex justify-between gap-4"><span className="text-cocoa/65">Delivery fee</span><span>{money(order.deliveryFee, order.currency)}</span></div>
-        <div className="flex justify-between gap-4 border-t border-cocoa/15 pt-3 font-display text-lg font-bold"><span>Total</span><span>{money(order.total, order.currency)}</span></div>
+        <div className="flex justify-between gap-4"><span className="text-cocoa/65">Delivery fee</span><span>{order.deliveryAddress?.riderFeeSeparate ? 'Paid separately to rider' : money(order.deliveryFee, order.currency)}</span></div>
+        <div className="flex justify-between gap-4 border-t border-cocoa/15 pt-3 font-display text-lg font-bold"><span>{order.deliveryAddress?.riderFeeSeparate ? 'Total payable to Sour Lemon' : 'Total'}</span><span>{money(order.total, order.currency)}</span></div>
       </div>
       {order.deliveryAddress ? (
         <div className="mt-5 border-t border-cocoa/15 pt-4 text-sm text-cocoa/75">
           <p className="font-semibold text-cocoa">Delivery to {order.deliveryAddress.recipientName}</p>
+          {order.deliveryAddress.area ?? order.deliveryAddress.deliveryAreaName ? <p>{order.deliveryAddress.area ?? order.deliveryAddress.deliveryAreaName}</p> : null}
           <p>{order.deliveryAddress.addressLine1}{order.deliveryAddress.addressLine2 ? `, ${order.deliveryAddress.addressLine2}` : ''}</p>
           <p>{order.deliveryAddress.city}</p>
           {order.deliveryAddress.landmark ? <p>Near {order.deliveryAddress.landmark}</p> : null}
+          {order.deliveryAddress.digitalAddress ? <p>GhanaPostGPS: {order.deliveryAddress.digitalAddress}</p> : null}
           <p>{order.deliveryAddress.phoneNumber}</p>
+          {order.deliveryAddress.riderFeeSeparate ? <p className="mt-2 font-semibold">The rider fee is arranged and paid separately.</p> : null}
         </div>
       ) : null}
     </>

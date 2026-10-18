@@ -16,13 +16,17 @@ export type CustomerOrderScope = 'active' | 'history'
 export interface DeliveryAddressInput {
   recipientName: string
   phoneNumber: string
+  area: string
   addressLine1: string
   addressLine2?: string
   city: string
   landmark?: string
+  digitalAddress?: string
 }
 
-export interface DeliveryAddressSnapshot extends DeliveryAddressInput {
+export interface DeliveryAddressSnapshot extends Omit<DeliveryAddressInput, 'area'> {
+  area?: string
+  riderFeeSeparate?: boolean
   deliveryAreaName?: string
 }
 

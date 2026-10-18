@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 
 const allowedImageTypes = new Set(['image/jpeg', 'image/png', 'image/webp'])
@@ -31,12 +31,19 @@ export function ManualMomoPayment({
 }: ManualMomoPaymentProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [file, setFile] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [reference, setReference] = useState('')
   const [showReference, setShowReference] = useState(false)
   const [copyMessage, setCopyMessage] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl)
+    }
+  }, [previewUrl])
 
   const copyNumber = async () => {
     try {
@@ -52,20 +59,26 @@ export function ManualMomoPayment({
     if (!selected) return
     if (!allowedImageTypes.has(selected.type)) {
       setError('Choose a JPEG, PNG, or WebP screenshot.')
+      setFile(null)
+      setPreviewUrl(null)
       event.target.value = ''
       return
     }
     if (selected.size > maxImageBytes) {
       setError('Choose a screenshot smaller than 5 MB.')
+      setFile(null)
+      setPreviewUrl(null)
       event.target.value = ''
       return
     }
     setFile(selected)
+    setPreviewUrl(URL.createObjectURL(selected))
     setError(null)
   }
 
   const removeFile = () => {
     setFile(null)
+    setPreviewUrl(null)
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
@@ -152,10 +165,17 @@ export function ManualMomoPayment({
             className="hidden"
           />
           {file ? (
-            <div className="mt-4 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-              <span className="min-w-0 flex-1 break-all font-medium">{file.name}</span>
-              <button type="button" onClick={() => fileInputRef.current?.click()} className="font-semibold text-olive underline underline-offset-4">Replace</button>
-              <button type="button" onClick={removeFile} className="font-semibold text-cocoa/65 underline underline-offset-4">Remove</button>
+            <div className="mt-4 flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center">
+              <div className="flex h-36 w-36 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-cocoa/15 bg-butter/30 sm:h-32 sm:w-32">
+                {previewUrl ? <img src={previewUrl} alt="Selected receipt screenshot preview" className="max-h-full max-w-full object-contain" /> : null}
+              </div>
+              <div className="min-w-0 flex-1 text-sm">
+                <p className="break-all font-medium">{file.name}</p>
+                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+                  <button type="button" onClick={() => fileInputRef.current?.click()} className="min-h-11 font-semibold text-olive underline underline-offset-4">Replace</button>
+                  <button type="button" onClick={removeFile} className="min-h-11 font-semibold text-cocoa/65 underline underline-offset-4">Remove</button>
+                </div>
+              </div>
             </div>
           ) : (
             <button type="button" onClick={() => fileInputRef.current?.click()} className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-olive px-5 py-2.5 text-sm font-semibold text-olive transition hover:bg-olive/10">
