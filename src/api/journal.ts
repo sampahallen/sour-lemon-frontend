@@ -33,7 +33,7 @@ export type JournalBlock =
   | { type: 'heading'; level: 2 | 3; text: string; runs?: JournalTextRun[] }
   | { type: 'list'; style: 'ordered' | 'unordered'; items: string[]; itemRuns?: JournalTextRun[][] }
   | { type: 'quote'; text: string; runs?: JournalTextRun[]; attribution?: string }
-  | { type: 'image'; imageId: string; caption?: string }
+  | { type: 'image'; imageId: string; caption?: string; widthPercent?: number; alignment?: 'left' | 'center' | 'right' }
 
 export interface JournalPostSummary {
   id: string

@@ -1,12 +1,33 @@
 import { Link } from 'react-router'
+import { useState } from 'react'
+import type { FormEvent } from 'react'
 import { LuInstagram } from 'react-icons/lu'
-import { FaTiktok, FaPinterest } from 'react-icons/fa'
+import { FaTiktok } from 'react-icons/fa'
 import { Star, Sparkle } from '@/assets/doodles/doodleIcons'
 import { SectionDivider } from '@/components/ui/SectionDivider'
 import { Button } from '@/components/ui/Button'
 import { useVisibleNavLinks } from '@/hooks/useVisibleNavLinks'
+import { subscribeToNewsletter } from '@/api/newsletter'
 
 export function Footer() {
+  const [email, setEmail] = useState('')
+  const [status, setStatus] = useState('')
+  const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const join = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setError('')
+    setStatus('')
+    setSubmitting(true)
+    try {
+      setStatus(await subscribeToNewsletter(email))
+      setEmail('')
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Please try again later.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
   const visibleNavLinks = useVisibleNavLinks()
   const shopLinks = visibleNavLinks.filter((link) => link.to === '/bakery' || link.to === '/shop')
   const infoLinks = visibleNavLinks.filter((link) => link.to !== '/bakery' && link.to !== '/shop')
@@ -27,26 +48,26 @@ export function Footer() {
             </p>
             <div className="mt-6 flex items-center gap-2 text-cream/80">
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/sourlem.on/"
                 aria-label="Instagram"
                 className="rounded-full p-2 transition-colors hover:bg-cream/10 hover:text-flame"
               >
                 <LuInstagram className="h-5 w-5" />
               </a>
               <a
-                href="https://tiktok.com"
+                href="https://www.tiktok.com/@sourlem.on?lang=en"
                 aria-label="TikTok"
                 className="rounded-full p-2 transition-colors hover:bg-cream/10 hover:text-flame"
               >
                 <FaTiktok className="h-5 w-5" />
               </a>
-              <a
+              {/* <a
                 href="https://pinterest.com"
                 aria-label="Pinterest"
                 className="rounded-full p-2 transition-colors hover:bg-cream/10 hover:text-flame"
               >
                 <FaPinterest className="h-5 w-5" />
-              </a>
+              </a> */}
             </div>
           </div>
 
@@ -81,11 +102,11 @@ export function Footer() {
               Stay in the loop
             </h3>
             <p className="mt-3 text-sm text-cream/70">
-              Drops, collabs and journal notes — no spam, just lemons.
+              Fresh bakery treats and Journal stories, straight to your inbox.
             </p>
             <form
-              onSubmit={(event) => event.preventDefault()}
-              className="mt-4 flex flex-col gap-3 sm:flex-row"
+              onSubmit={join}
+              className="mt-4 flex min-w-0 flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row"
             >
               <label htmlFor="footer-email" className="sr-only">
                 Email address
@@ -93,13 +114,23 @@ export function Footer() {
               <input
                 id="footer-email"
                 type="email"
+                required
+                autoComplete="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
                 placeholder="you@email.com"
-                className="w-full rounded-full border-2 border-cream/25 bg-cream/5 px-5 py-3 text-sm text-cream placeholder:text-cream/40 focus:border-flame focus:outline-none"
+                className="min-w-0 w-full flex-1 rounded-full border-2 border-cream/25 bg-cream/5 px-5 py-3 text-sm text-cream placeholder:text-cream/40 focus:border-flame focus:outline-none"
               />
-              <Button type="submit" size="md" className="shrink-0">
-                Join
+              <Button type="submit" size="md" className="shrink-0" disabled={submitting}>
+                {submitting ? 'Joining…' : 'Join'}
               </Button>
             </form>
+            <p className="mt-3 max-w-sm text-xs leading-relaxed text-cream/70">
+              Get an email when a new bakery treat or Journal story drops. Confirm your address by email. Unsubscribe anytime.{' '}
+              <Link to="/privacy" className="underline underline-offset-2 hover:text-butter">Privacy notice</Link>
+            </p>
+            {status ? <p role="status" className="mt-3 text-sm text-butter">{status}</p> : null}
+            {error ? <p role="alert" className="mt-3 text-sm text-butter">{error}</p> : null}
             <Star className="pointer-events-none absolute -right-2 -top-6 hidden h-8 w-8 text-butter/70 lg:block" />
           </div>
         </div>

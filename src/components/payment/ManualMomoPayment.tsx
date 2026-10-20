@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
+import { useImagePreview } from '@/components/ui/imagePreviewContext'
 
 const allowedImageTypes = new Set(['image/jpeg', 'image/png', 'image/webp'])
 const maxImageBytes = 5 * 1024 * 1024
@@ -29,6 +30,7 @@ export function ManualMomoPayment({
   onSubmit,
   onRefresh,
 }: ManualMomoPaymentProps) {
+  const { openImagePreview, closeImagePreview } = useImagePreview()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [file, setFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -57,6 +59,7 @@ export function ManualMomoPayment({
   const chooseFile = (event: ChangeEvent<HTMLInputElement>) => {
     const selected = event.target.files?.[0] ?? null
     if (!selected) return
+    closeImagePreview()
     if (!allowedImageTypes.has(selected.type)) {
       setError('Choose a JPEG, PNG, or WebP screenshot.')
       setFile(null)
@@ -77,6 +80,7 @@ export function ManualMomoPayment({
   }
 
   const removeFile = () => {
+    closeImagePreview()
     setFile(null)
     setPreviewUrl(null)
     if (fileInputRef.current) fileInputRef.current.value = ''
@@ -166,9 +170,9 @@ export function ManualMomoPayment({
           />
           {file ? (
             <div className="mt-4 flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center">
-              <div className="flex h-36 w-36 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-cocoa/15 bg-butter/30 sm:h-32 sm:w-32">
-                {previewUrl ? <img src={previewUrl} alt="Selected receipt screenshot preview" className="max-h-full max-w-full object-contain" /> : null}
-              </div>
+              {previewUrl ? <button type="button" aria-label="Preview receipt screenshot" onClick={() => openImagePreview({ src: previewUrl, alt: 'Receipt screenshot' })} className="flex h-36 w-36 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-cocoa/15 bg-butter/30 focus-visible:outline-2 focus-visible:outline-flame sm:h-32 sm:w-32">
+                <img src={previewUrl} alt="Selected receipt screenshot preview" className="max-h-full max-w-full object-contain" />
+              </button> : null}
               <div className="min-w-0 flex-1 text-sm">
                 <p className="break-all font-medium">{file.name}</p>
                 <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
