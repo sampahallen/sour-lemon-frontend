@@ -18,7 +18,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn: AuthContextValue['signIn'] = useCallback(async (credentials) => {
     const session = await signInRequest(credentials)
-    if (session.user.role !== 'customer') throw new Error('This account does not have customer access.')
+    if (session.user.role !== 'customer' || !session.user.roles.includes('customer')) throw new Error('This account does not have customer access.')
     const previous = getAuthState()
     acceptSession(session)
     if (previous.requiresSignIn && previous.session && previous.session.user.id !== session.user.id) window.location.reload()
