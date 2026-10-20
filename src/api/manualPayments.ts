@@ -28,6 +28,7 @@ export const getCakePayment = async (id: string, token: string) => {
   return response.json() as Promise<{
     cake: { id: string; occasion: string; quotedAmount: string | null; currency: string; status: string; quoteExpiresAt: string | null }
     payable: boolean
+    paymentConfigurationMissing: boolean
     momo: { number: string; recipientName: string; network: string } | null
     proofs: PaymentProofSummary[]
   }>

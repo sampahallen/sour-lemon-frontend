@@ -12,6 +12,7 @@ import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router/dom'
 import { AuthProvider } from './auth/AuthProvider'
 import { CartProvider } from './cart/CartProvider'
+import { ImagePreviewProvider } from './components/ui/ImagePreviewProvider'
 import { router } from './routes/router'
 import { SiteSectionsProvider } from './siteSections/SiteSectionsProvider'
 
@@ -19,9 +20,11 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AuthProvider>
       <SiteSectionsProvider>
-        <CartProvider>
-          <RouterProvider router={router} />
-        </CartProvider>
+        <ImagePreviewProvider>
+          <CartProvider>
+            <RouterProvider router={router} />
+          </CartProvider>
+        </ImagePreviewProvider>
       </SiteSectionsProvider>
     </AuthProvider>
   </StrictMode>,

@@ -1,13 +1,15 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { NavLink } from 'react-router'
 import { useAuth } from '@/auth/authContext'
 import { normalizePhoneNumber } from '@/utils/phoneNumber'
 import { submitCustomCakeRequest, uploadCustomCakeRequestImage } from '@/api/customCakeRequest'
 import { cn } from '@/utils/cn'
+import { useImagePreview } from '@/components/ui/imagePreviewContext'
 
 export function CustomCake() {
   const { session } = useAuth()
+  const { openImagePreview, closeImagePreview } = useImagePreview()
 
   const [customerName, setCustomerName] = useState(session?.user.name ?? '')
   const [phoneNumber, setPhoneNumber] = useState(session?.user.phoneNumber ?? '')
@@ -22,15 +24,19 @@ export function CustomCake() {
   const [submitted, setSubmitted] = useState(false)
   const photoInputRef = useRef<HTMLInputElement>(null)
 
+  useEffect(() => () => {
+    if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl)
+  }, [photoPreviewUrl])
+
   const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null
-    if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl)
+    closeImagePreview()
     setPhoto(file)
     setPhotoPreviewUrl(file ? URL.createObjectURL(file) : null)
   }
 
   const clearPhoto = () => {
-    if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl)
+    closeImagePreview()
     setPhoto(null)
     setPhotoPreviewUrl(null)
     if (photoInputRef.current) photoInputRef.current.value = ''
@@ -223,7 +229,9 @@ export function CustomCake() {
               <div className="flex flex-wrap items-start gap-3">
                 {photoPreviewUrl ? (
                   <div className="relative h-20 w-20 overflow-hidden rounded-2xl border-2 border-flame bg-white/60">
-                    <img src={photoPreviewUrl} alt="Reference preview" className="h-full w-full object-cover" />
+                    <button type="button" aria-label="Preview reference photo" onClick={() => openImagePreview({ src: photoPreviewUrl, alt: 'Custom cake reference photo' })} className="h-full w-full focus-visible:outline-2 focus-visible:outline-flame">
+                      <img src={photoPreviewUrl} alt="Reference preview" className="h-full w-full object-cover" />
+                    </button>
                     <button
                       type="button"
                       aria-label="Remove reference photo"

@@ -75,6 +75,11 @@ export function CustomCakePayment() {
             <h2 className="font-display text-xl font-bold">Payment confirmed</h2>
             <p className="mt-2 text-sm leading-relaxed text-cocoa/70">The owner will coordinate your cake with you on WhatsApp.</p>
           </div>
+        ) : details.paymentConfigurationMissing ? (
+          <div className="rounded-2xl border border-flame/20 bg-flame/5 p-5 sm:p-6" role="alert">
+            <h2 className="font-display text-xl font-bold">Mobile Money payment is temporarily unavailable</h2>
+            <p className="mt-2 text-sm text-cocoa/70">Please contact the owner for payment details. You can return to this link once payment is set up.</p>
+          </div>
         ) : !details.payable ? (
           <div className="rounded-2xl border border-cocoa/15 bg-butter/50 p-5 sm:p-6">
             <h2 className="font-display text-xl font-bold">This quote is no longer payable</h2>

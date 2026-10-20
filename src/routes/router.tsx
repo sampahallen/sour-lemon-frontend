@@ -21,6 +21,8 @@ import { Checkout } from '@/pages/Checkout'
 import { OrderConfirmation } from '@/pages/OrderConfirmation'
 import { ForgotPassword } from '@/pages/ForgotPassword'
 import { ResetPassword } from '@/pages/ResetPassword'
+import { NewsletterAction } from '@/pages/NewsletterAction'
+import { Privacy } from '@/pages/Privacy'
 
 export const router = createBrowserRouter(
   [
@@ -39,6 +41,9 @@ export const router = createBrowserRouter(
         { path: '/journal/:slug', element: <JournalPost /> },
         { path: '/about', element: <About /> },
         { path: '/contact', element: <Contact /> },
+        { path: '/privacy', element: <Privacy /> },
+        { path: '/newsletter/confirm', element: <NewsletterAction action="confirm" /> },
+        { path: '/newsletter/unsubscribe', element: <NewsletterAction action="unsubscribe" /> },
         { path: '/signin', element: <SignIn /> },
         { path: '/forgot-password', element: <ForgotPassword /> },
         { path: '/reset-password', element: <ResetPassword /> },

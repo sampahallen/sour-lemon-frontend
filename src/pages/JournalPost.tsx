@@ -31,6 +31,9 @@ function JournalInlineText({ text, runs }: { text: string; runs?: JournalTextRun
 
 function JournalContent({ post }: { post: JournalPostType }) {
   const images = new Map(post.images.map((image) => [image.id, image]))
+  const imageWidth = (widthPercent?: number) => typeof widthPercent === 'number' && Number.isFinite(widthPercent)
+    ? Math.min(100, Math.max(25, widthPercent))
+    : 100
 
   const renderBlock = (block: JournalBlock) => {
     switch (block.type) {
@@ -61,11 +64,14 @@ function JournalContent({ post }: { post: JournalPostType }) {
       case 'image': {
         const image = images.get(block.imageId)
         if (!image) return null
+        const imageAlignment = block.alignment === 'left' ? 'mr-auto' : block.alignment === 'right' ? 'ml-auto' : 'mx-auto'
         return (
           <figure className="py-3">
-            <img src={image.url} alt={image.altText} className="max-h-[44rem] w-full rounded-[2rem] border-2 border-cocoa object-cover" />
+            <div className={`${imageAlignment} max-w-full`} style={{ width: `${imageWidth(block.widthPercent)}%` }}>
+              <img src={image.url} alt={image.altText} className="max-h-[44rem] w-full rounded-[2rem] border-2 border-cocoa object-contain" />
+            </div>
             {block.caption || image.caption ? (
-              <figcaption className="mt-3 text-center text-sm font-medium text-cocoa/55">{block.caption || image.caption}</figcaption>
+              <figcaption className={`${imageAlignment} mt-3 max-w-full text-center text-sm font-medium text-cocoa/55`} style={{ width: `${imageWidth(block.widthPercent)}%` }}>{block.caption || image.caption}</figcaption>
             ) : null}
           </figure>
         )
