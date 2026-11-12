@@ -8,3 +8,6 @@ export function useSiteSectionLinks() {
   if (!links) throw new Error('useSiteSectionLinks must be used inside SiteSectionsProvider.')
   return links
 }
+
+import type { SiteSection } from '@/api/siteSections'
+export const SectionStateContext = createContext<{ sections: SiteSection[] | null; error: string | null; refresh: () => void }>({ sections: null, error: null, refresh: () => {} })

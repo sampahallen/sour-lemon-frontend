@@ -1,3 +1,4 @@
+import { SectionGate } from '@/siteSections/SectionGate'
 import { createBrowserRouter } from 'react-router'
 import { Layout } from '@/components/layout/Layout'
 import { Home } from '@/pages/Home'
@@ -30,17 +31,17 @@ export const router = createBrowserRouter(
       element: <Layout />,
       children: [
         { path: '/', element: <Home /> },
-        { path: '/bakery', element: <Bakery /> },
-        { path: '/bakery/:slug', element: <BakeryProduct /> },
-        { path: '/custom-cake', element: <CustomCake /> },
+        { path: '/bakery', element: <SectionGate sectionKey="cakes"><Bakery /></SectionGate> },
+        { path: '/bakery/:slug', element: <SectionGate sectionKey="cakes"><BakeryProduct /></SectionGate> },
+        { path: '/custom-cake', element: <SectionGate sectionKey="cakes"><CustomCake /></SectionGate> },
         { path: '/custom-cake/payment/:requestId/:token', element: <CustomCakePayment /> },
-        { path: '/shop', element: <Shop /> },
-        { path: '/collabs', element: <Collabs /> },
-        { path: '/games', element: <Games /> },
-        { path: '/journal', element: <Journal /> },
-        { path: '/journal/:slug', element: <JournalPost /> },
-        { path: '/about', element: <About /> },
-        { path: '/contact', element: <Contact /> },
+        { path: '/shop', element: <SectionGate sectionKey="shop"><Shop /></SectionGate> },
+        { path: '/collabs', element: <SectionGate sectionKey="collaborations"><Collabs /></SectionGate> },
+        { path: '/games', element: <SectionGate sectionKey="games"><Games /></SectionGate> },
+        { path: '/journal', element: <SectionGate sectionKey="journal"><Journal /></SectionGate> },
+        { path: '/journal/:slug', element: <SectionGate sectionKey="journal"><JournalPost /></SectionGate> },
+        { path: '/about', element: <SectionGate sectionKey="about"><About /></SectionGate> },
+        { path: '/contact', element: <SectionGate sectionKey="contact"><Contact /></SectionGate> },
         { path: '/privacy', element: <Privacy /> },
         { path: '/newsletter/confirm', element: <NewsletterAction action="confirm" /> },
         { path: '/newsletter/unsubscribe', element: <NewsletterAction action="unsubscribe" /> },
